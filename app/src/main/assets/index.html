@@ -235,6 +235,27 @@ const TPLS=[
   {id:'tpl_d',name:'数据分析',icon:'\uD83D\uDCCA',content:'请帮我分析以下数据：\n\n{{数据}}\n\n**分析维度：**\n1. 数据概览和关键指标\n2. 趋势分析\n3. 异常值检测\n4. 可行的改进建议\n\n**输出格式：** {{格式要求}}',tags:['数据','分析']}
 ];
 let D=loadD(),curF=null,editId=null,editTags=[],pendingFiles=[],pendingKeep=[],selectedIds=new Set(),batchMode=false;
+// Migrate old base64 attachments to IndexedDB
+(async()=>{
+  let migrated=0;
+  for(const p of D.prompts){
+    if(!p.attachments)continue;
+    for(let i=0;i<p.attachments.length;i++){
+      const a=p.attachments[i];
+      if(a.url&&a.url.startsWith('data:')&&!a.id){
+        try{
+          const resp=await fetch(a.url);
+          const buf=await resp.arrayBuffer();
+          const id='att_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+          await dbSet(id,{data:buf,type:a.type==='image'?'image/jpeg':'application/octet-stream',name:a.name||'file',size:buf.byteLength});
+          p.attachments[i]={id,type:a.type,name:a.name,size:buf.byteLength};
+          migrated++;
+        }catch(e){console.error('migrate err:',e)}
+      }
+    }
+  }
+  if(migrated>0){saveD();console.log('Migrated '+migrated+' attachments to IDB')}
+})();
 let activeTagFilters=[],mdMode='edit',dragSrcId=null;
 function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
 function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates)d.templates=[];if(!d.copyHistory)d.copyHistory=[];if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!d.prompts)d.prompts=[];return d}}catch(e){}return defD()}
@@ -376,10 +397,27 @@ function render(){
     const hasImg=imgs.length>0;
     let atG='';
     if(hasImg){
-      const items=imgs.map((a,idx)=>`<div class="stack-item"><img src="${a.thumb||a.url||''}" alt=""></div>`).join('');
+      const placeholders=imgs.map((a,idx)=>`<div class="stack-item" data-att-id="${a.id||''}" data-att-url="${a.url||a.thumb||''}"><div class="stack-loading" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;opacity:.3">\uD83D\uDDBC\uFE0F</div></div>`).join('');
       const cnt=imgs.length>1?`<div class="stack-count">${imgs.length} 张</div>`:'';
-      atG=`<div class="card-gal" onclick="event.stopPropagation()"><div class="stack-wrap">${items}${cnt}</div></div>`;
-      setTimeout(()=>{document.querySelectorAll('.stack-wrap').forEach(w=>{if(!w._inited){w._inited=1;initStack(w)}})},50);
+      atG=`<div class="card-gal" onclick="event.stopPropagation()" data-prompt-id="${p.id}"><div class="stack-wrap">${placeholders}${cnt}</div></div>`;
+      // Load images async from IDB
+      setTimeout(()=>{
+        const gal=document.querySelector(`.card-gal[data-prompt-id="${p.id}"]`);
+        if(!gal)return;
+        gal.querySelectorAll('.stack-item').forEach(async el=>{
+          const attId=el.dataset.attId;
+          const attUrl=el.dataset.attUrl;
+          let src=attUrl;
+          if(attId&&!src){try{src=await loadAttachmentURL({id:attId})}catch(e){}}
+          if(src){
+            el.innerHTML=`<img src="${src}" alt="">`;
+          }else{
+            el.innerHTML=`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.5">\u65E0\u6CD5\u52A0\u8F7D</div>`;
+          }
+        });
+        const wrap=gal.querySelector('.stack-wrap');
+        if(wrap&&!wrap._inited){wrap._inited=1;initStack(wrap)}
+      },50);
     }
     const isMobile='ontouchstart'in window;
     const dragAttr=isMobile?'':`draggable="true" ondragstart="onDragStart(event,'${p.id}')" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${p.id}')`;
@@ -702,9 +740,10 @@ function setColorMark(id,c){
 function preFiles(){
   const files=document.getElementById('pFile').files;
   for(const f of files){
-    const reader=new FileReader();
-    reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
-    reader.readAsDataURL(f);
+    saveAttachment(f).then(att=>{
+      pendingFiles.push(att);
+      renderAttachments();
+    }).catch(e=>{console.error(e);toast('保存附件失败')});
   }
 }
 function renderAttachments(){
@@ -712,8 +751,8 @@ function renderAttachments(){
   el.innerHTML=pendingKeep.map((a,i)=>a.type==='image'?`<div class="pt"><img src="${a.thumb||a.url}" onclick="previewImg(this.src)" style="cursor:pointer"><div class="rm" onclick="event.stopPropagation();rmKeepAt(${i})">\u00D7</div></div>`:`<div class="pf"><span>\uD83D\uDCCE ${esc(a.name)}</span><button class="rm" onclick="rmKeepAt(${i})">\u00D7</button></div>`).join('')+
   pendingFiles.map((a,i)=>a.type==='image'?`<div class="pt"><img src="${a.thumb||a.url}" onclick="previewImg(this.src)" style="cursor:pointer"><div class="rm" onclick="event.stopPropagation();rmFileAt(${i})">\u00D7</div></div>`:`<div class="pf"><span>\uD83D\uDCCE ${esc(a.name)}</span><button class="rm" onclick="rmFileAt(${i})">\u00D7</button></div>`).join('');
 }
-function rmKeepAt(i){pendingKeep.splice(i,1);renderAttachments()}
-function rmFileAt(i){pendingFiles.splice(i,1);renderAttachments()}
+async function rmKeepAt(i){const a=pendingKeep[i];if(a&&a.id){try{await dbDel(a.id)}catch(e){}}pendingKeep.splice(i,1);renderAttachments()}
+async function rmFileAt(i){const a=pendingFiles[i];if(a&&a.id){try{await dbDel(a.id)}catch(e){}}pendingFiles.splice(i,1);renderAttachments()}
 
 // ===== ACTIONS =====
 function copyP(id){
