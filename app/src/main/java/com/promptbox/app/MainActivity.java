@@ -50,10 +50,12 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                int sb = resDimen("status_bar_height");
                 int nb = resDimen("navigation_bar_height");
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
+                    ".sb-hd{padding-top:max(50px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
