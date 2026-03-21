@@ -39,24 +39,17 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .card.selected{box-shadow:0 0 0 2px var(--primary),var(--shadow-card)}.card.selected::after{content:"\2713";position:absolute;top:10px;right:10px;background:var(--primary);color:#fff;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 .card.dragging{opacity:.5}.card.drag-over{box-shadow:0 0 0 2px var(--primary)}
 .card-cover{width:100%;max-height:200px;object-fit:contain;display:block;background:linear-gradient(135deg,var(--bg3),var(--bg));padding:8px}
-.card-gal{padding:0;overflow:hidden;position:relative;height:220px;background:var(--bg3);touch-action:pan-y}
-.card-gal.big{height:220px}
-.card-gal .gal-track{display:flex;height:100%;transition:transform .3s cubic-bezier(.25,.46,.45,.94);will-change:transform}
-.card-gal .gal-track.dragging{transition:none}
-.card-gal .gal-track>div{flex:0 0 100%;height:100%;display:flex;align-items:center;justify-content:center}
-.card-gal .gal-track>div>img{width:100%;height:100%;object-fit:contain}
-.card-gal .gal-dots{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;z-index:2}
-.card-gal .gal-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.4);transition:all .25s;backdrop-filter:blur(4px)}
-.card-gal .gal-dot.active{background:rgba(255,255,255,.9);width:18px;border-radius:3px}
-.card-gal .gal-fade-l,.card-gal .gal-fade-r{position:absolute;top:0;bottom:0;width:30px;z-index:1;pointer-events:none;opacity:0;transition:opacity .2s}
-.card-gal .gal-fade-l{left:0;background:linear-gradient(90deg,rgba(0,0,0,.12),transparent)}
-.card-gal .gal-fade-r{right:0;background:linear-gradient(-90deg,rgba(0,0,0,.12),transparent)}
-.card-gal:hover .gal-fade-l,.card-gal:hover .gal-fade-r{opacity:1}
-.card-gal .gal-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.35);backdrop-filter:blur(8px);color:#fff;display:none;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:background .15s;border:none}
-.card-gal:hover .gal-arrow{display:flex}
-.card-gal .gal-arrow:active{background:rgba(0,0,0,.55)}
-.card-gal .gal-arrow.l{left:8px}
-.card-gal .gal-arrow.r{right:8px}
+.card-gal{padding:0;overflow:hidden;position:relative;background:var(--bg3)}
+.card-gal .stack-wrap{position:relative;height:220px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.card-gal .stack-wrap img{position:absolute;width:100%;height:100%;object-fit:cover;border-radius:0;transition:all .4s cubic-bezier(.34,1.56,.64,1);box-shadow:0 2px 8px rgba(0,0,0,.15);border:2px solid rgba(255,255,255,.15)}
+.card-gal .stack-wrap:hover img{transition:all .35s cubic-bezier(.25,.46,.45,.94);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.card-gal .stack-wrap:hover img:nth-child(1){transform:rotate(-1deg) translateY(-6px)}
+.card-gal .stack-wrap:hover img:nth-child(2){transform:rotate(1deg) translate(4px,-4px)}
+.card-gal .stack-wrap:hover img:nth-child(3){transform:rotate(-0.5deg) translate(-3px,-2px)}
+.card-gal .stack-wrap:hover img:nth-child(4){transform:rotate(1.5deg) translate(6px,-1px)}
+.card-gal .stack-wrap:hover img:nth-child(5){transform:rotate(-1deg) translate(-5px,0)}
+.card-gal .stack-count{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.45);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);color:#fff;font-size:12px;font-weight:600;padding:4px 10px;border-radius:10px;z-index:10;letter-spacing:.3px}
+.card-gal .stack-wrap.fanned img{box-shadow:0 6px 24px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.2)}
 .card-body{padding:14px 16px 10px}.card-top{display:flex;align-items:flex-start;gap:6px}
 .card-title{font-size:15px;font-weight:600;flex:1;line-height:1.3;letter-spacing:-.2px}
 .card-fav{font-size:17px;opacity:.15;transition:all .2s;padding:2px;flex-shrink:0;cursor:pointer}.card-fav:active{transform:scale(1.4)}.card-fav.on{opacity:1;color:var(--warn)}
@@ -382,15 +375,13 @@ function render(){
     const tags=(p.tags||[]).map(t=>`<span class="card-tag" onclick="event.stopPropagation();filterByTag('${esc(t)}')">${esc(t)}</span>`).join('');
     const cHtml=p.content?`<div class="card-md">${mdRender(p.content.slice(0,300))}</div>`:'';
     const exHtml=p.example?`<div class="card-ex">例: ${esc(p.example.slice(0,80))}</div>`:'';
-    const imgs=(p.attachments||[]).filter(a=>a.type==='image').slice(0,10);
+    const imgs=(p.attachments||[]).filter(a=>a.type==='image').slice(0,5);
     const hasImg=imgs.length>0;
     let atG='';
-    if(imgs.length===1){
-      atG=`<div class="card-gal"><div style="height:100%;display:flex;align-items:center"><img src="${imgs[0].thumb||imgs[0].url||''}" alt=""></div></div>`;
-    }else if(imgs.length>1){
-      const slides=imgs.map(a=>`<div><img src="${a.thumb||a.url||''}" alt=""></div>`).join('');
-      const dots=imgs.map((_,i)=>`<div class="gal-dot${i===0?' active':''}"></div>`).join('');
-      atG=`<div class="card-gal big" data-count="${imgs.length}" onclick="event.stopPropagation()"><div class="gal-track">${slides}</div><div class="gal-dots">${dots}</div><button class="gal-arrow l" onclick="event.stopPropagation();galPrev(this)">‹</button><button class="gal-arrow r" onclick="event.stopPropagation();galNext(this)">›</button></div>`;
+    if(hasImg){
+      const imgTags=imgs.map((a,idx)=>`<img src="${a.thumb||a.url||''}" alt="" style="z-index:${imgs.length-idx};transform:rotate(${(idx-imgs.length/2)*1.2}deg) translateY(${idx*2}px)">`).join('');
+      const cnt=imgs.length>1?`<div class="stack-count">${imgs.length} 张</div>`:'';
+      atG=`<div class="card-gal" onclick="event.stopPropagation()"><div class="stack-wrap" onclick="stackFanOut(this)">${imgTags}${cnt}</div></div>`;
     }
     const isMobile='ontouchstart'in window;
     const dragAttr=isMobile?'':`draggable="true" ondragstart="onDragStart(event,'${p.id}')" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${p.id}')`;
@@ -488,44 +479,34 @@ function doDelFolder(id){
 }
 
 
-// ===== IMAGE CAROUSEL =====
-function galPrev(btn){const gal=btn.closest('.card-gal');galSwipe(gal,-1)}
-function galNext(btn){const gal=btn.closest('.card-gal');galSwipe(gal,1)}
-function galSwipe(gal,dir){
-  const track=gal.querySelector('.gal-track');if(!track)return;
-  let idx=parseInt(track.dataset.idx||'0');
-  const count=parseInt(gal.dataset.count||'1');
-  idx=Math.max(0,Math.min(count-1,idx+dir));
-  track.dataset.idx=idx;
-  track.style.transform='translateX(-'+idx*100+'%)';
-  gal.querySelectorAll('.gal-dot').forEach((d,i)=>{d.classList.toggle('active',i===idx)});
+// ===== IMAGE STACK =====
+function stackFanOut(wrap){
+  const imgs=wrap.querySelectorAll('img');
+  const count=imgs.length;
+  if(wrap.classList.contains('fanned')){
+    // Collapse
+    wrap.classList.remove('fanned');
+    imgs.forEach((img,i)=>{
+      img.style.transform='';
+      img.style.zIndex=count-i;
+    });
+    return;
+  }
+  // Fan out
+  wrap.classList.add('fanned');
+  const spread=Math.min(90, count*18);
+  const step=count>1?spread/(count-1):0;
+  const startR=-(spread/2);
+  const maxX=Math.min(60, count*12);
+  imgs.forEach((img,i)=>{
+    const r=startR+step*i;
+    const x=Math.sin(r*Math.PI/180)*maxX;
+    const y=Math.abs(Math.cos(r*Math.PI/180)*10)-10;
+    const sc=1-i*0.02;
+    img.style.transform='translateX('+x+'px) translateY('+y+'px) rotate('+r*0.3+'deg) scale('+sc+')';
+    img.style.zIndex=i;
+  });
 }
-// Touch swipe
-document.addEventListener('touchstart',e=>{
-  const gal=e.target.closest('.card-gal');if(!gal||!gal.dataset.count)return;
-  const track=gal.querySelector('.gal-track');
-  const t=e.touches[0];
-  track._sx=t.clientX;track._si=parseInt(track.dataset.idx||'0');track.classList.add('dragging');
-},{passive:true});
-document.addEventListener('touchmove',e=>{
-  const gal=e.target.closest('.card-gal');if(!gal)return;
-  const track=gal.querySelector('.gal-track');
-  if(track._sx==null)return;
-  const dx=e.touches[0].clientX-track._sx;
-  const w=gal.offsetWidth;
-  const off=-track._si*100+(dx/w)*100;
-  track.style.transform='translateX('+off+'%)';
-},{passive:true});
-document.addEventListener('touchend',e=>{
-  const gal=e.target.closest('.card-gal');if(!gal)return;
-  const track=gal.querySelector('.gal-track');
-  if(track._sx==null)return;
-  const dx=(e.changedTouches[0].clientX||0)-track._sx;
-  track.classList.remove('dragging');
-  if(Math.abs(dx)>40){galSwipe(gal,dx<0?1:-1)}
-  else{const idx=parseInt(track.dataset.idx||'0');track.style.transform='translateX(-'+idx*100+'%)'}
-  track._sx=null;
-},{passive:true});
 
 // ===== MODAL =====
 function openM(fromTpl,showTpl){
