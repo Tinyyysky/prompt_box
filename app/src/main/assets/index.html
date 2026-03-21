@@ -870,6 +870,11 @@ function closeMopt() {
   document.getElementById('mopt').classList.remove('open');
 }
 
+function permDel(id) {
+  if (!confirm('永久删除此提示词？')) return;
+  D.prompts = D.prompts.filter(p => p.id !== id);
+  saveD(); render(); toast('已永久删除');
+}
 function init(){
   applyTheme();
   if(D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
