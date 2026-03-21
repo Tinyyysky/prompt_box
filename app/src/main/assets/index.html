@@ -548,10 +548,26 @@ function setColorMark(id,c){
 function preFiles(){
   const files=document.getElementById('pFile').files;
   for(const f of files){
-    const reader=new FileReader();
-    reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
-    reader.readAsDataURL(f);
+    if(f.type.startsWith('image/')){
+      compressImg(f,(data)=>{pendingFiles.push({name:f.name,type:'image',url:data,thumb:data});renderAttachments()});
+    }else{
+      if(f.size>1*1024*1024){toast('文件过大，限制1MB');continue}
+      const reader=new FileReader();
+      reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
+      reader.readAsDataURL(f);
+    }
   }
+}
+function compressImg(file,cb){
+  const img=new Image();const url=URL.createObjectURL(file);
+  img.onload=()=>{
+    const MAX=1200;let w=img.width,h=img.height;
+    if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r)}
+    const c=document.createElement('canvas');c.width=w;c.height=h;
+    const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
+    let q=0.7,trySize=()=>{const d=c.toDataURL('image/jpeg',q);if(d.length>300*1024&&q>0.3){q-=0.15;trySize()}else{URL.revokeObjectURL(url);cb(d)}};
+    trySize();
+  };img.src=url;
 }
 function renderAttachments(){
   const el=document.getElementById('prevArea');
@@ -632,6 +648,7 @@ function batchTag(){
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
+  document.getElementById('batchBar').classList.remove('open');
   setTimeout(()=>{const inp=document.getElementById('batchTagInput');if(inp)inp.focus()},100);
 }
 function doBatchTag(){
@@ -649,6 +666,7 @@ function batchMove(){
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
+  document.getElementById('batchBar').classList.remove('open');
 }
 function doBatchMove(folderId){
   D.prompts.forEach(p=>{if(selectedIds.has(p.id))p.folder=folderId||''});
@@ -844,6 +862,7 @@ function closeAS() {
   document.getElementById('asOL').classList.remove('open');
   document.getElementById('as').classList.remove('open');
   asCardId = null;
+  if(batchMode)document.getElementById('batchBar').classList.add('open');
 }
 function toggleStarFromAS(id) {
   const p = D.prompts.find(x => x.id === id); if (!p) return;
