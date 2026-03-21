@@ -24,6 +24,7 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
+    private boolean lastDark = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,6 +33,9 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
+
+        // 让内容绘制到系统栏后面
+        webView.setFitsSystemWindows(false);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -47,10 +51,15 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
+                int sb = resDimen("status_bar_height");
                 int nb = resDimen("navigation_bar_height");
+                // 内容绘制到系统栏后面 → 需要手动加 padding
+                // 状态栏高度加到 .hdr，让标题不被遮挡
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
+                    ".hdr{padding-top:max(12px," + sb + "px) !important}" +
+                    ".search{top:max(0px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
@@ -79,24 +88,32 @@ public class MainActivity extends Activity {
 
         webView.addJavascriptInterface(new ClipboardBridge(this), "AndroidClipboard");
         webView.loadUrl("file:///android_asset/index.html");
+
+        // 首次设置系统栏
+        lastDark = isDarkMode();
+        applySystemBars(lastDark);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        applySystemBars();
+        boolean dark = isDarkMode();
+        if (dark != lastDark) {
+            lastDark = dark;
+            applySystemBars(dark);
+        }
     }
 
-    private void applySystemBars() {
+    private void applySystemBars(boolean dark) {
         Window w = getWindow();
-        boolean dark = isDarkMode();
+        View dv = w.getDecorView();
 
-        // 状态栏和导航栏全透明 → 让 app 背景色自然透出
+        // 全透明 → app 背景透出，深色/浅色自动适配
+        w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
         w.setStatusBarColor(Color.TRANSPARENT);
         w.setNavigationBarColor(Color.TRANSPARENT);
-        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
-        View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
@@ -137,7 +154,11 @@ public class MainActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        applySystemBars();
+        boolean dark = isDarkMode();
+        if (dark != lastDark) {
+            lastDark = dark;
+            applySystemBars(dark);
+        }
     }
 
     @Override
