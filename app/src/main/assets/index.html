@@ -230,10 +230,51 @@ const TPLS=[
 let D=loadD(),curF=null,editId=null,editTags=[],pendingFiles=[],pendingKeep=[],selectedIds=new Set(),batchMode=false;
 let activeTagFilters=[],mdMode='edit',dragSrcId=null;
 function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
-function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates)d.templates=[];if(!d.copyHistory)d.copyHistory=[];if(!d.settings.themeColor)d.settings.themeColor='#007AFF';return d}}catch(e){}return defD()}
+function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates)d.templates=[];if(!d.copyHistory)d.copyHistory=[];if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!d.prompts)d.prompts=[];return d}}catch(e){}return defD()}
 let saveTimer;
-function saveD(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){console.error('saveD error:',e);toast('保存失败：'+e.message)}},300)}
-function saveDNow(){try{localStorage.setItem(SK,JSON.stringify(D))}catch(e){}}
+function saveD(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDNow(),300)}
+function saveDNow(){
+  try{localStorage.setItem(SK,JSON.stringify(D))}
+  catch(e){
+    if(e.name==='QuotaExceededError'){
+      // Move large attachments to IndexedDB
+      extractBigData(()=>{try{localStorage.setItem(SK,JSON.stringify(D))}catch(e2){toast('存储空间不足，请删除一些提示词')}});
+    }else{toast('保存失败：'+e.message)}
+  }
+}
+// IndexedDB for large attachment data
+const IDB_DB='promptbox_idb',IDB_STORE='blobs';
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(IDB_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbSet(key,val){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put(val,key);tx.oncomplete=res;tx.onerror=rej})}
+async function idbGet(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readonly');const r=tx.objectStore(IDB_STORE).get(key);r.onsuccess=()=>res(r.result);r.onerror=rej})}
+async function idbDel(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(key);tx.oncomplete=res;tx.onerror=rej})}
+function extractBigData(cb){
+  let moved=0;
+  const ps=D.prompts||[];
+  for(const p of ps){
+    if(!p.attachments)continue;
+    for(let i=0;i<p.attachments.length;i++){
+      const a=p.attachments[i];
+      if(a.url&&a.url.length>50000&&!a._idb){
+        const k='att_'+p.id+'_'+i;
+        idbSet(k,a.url).then(()=>{a._idb=k;delete a.url;if(a.thumb&&a.thumb.length>50000){idbSet(k+'_t',a.thumb).then(()=>{a._idb_t=k+'_t';delete a.thumb})}}).catch(()=>{});
+        moved++;
+      }
+    }
+  }
+  if(moved)toast('部分附件已转存');setTimeout(cb,200);
+}
+// Restore IDB data on load
+async function restoreIDB(){
+  for(const p of(D.prompts||[])){
+    if(!p.attachments)continue;
+    for(const a of p.attachments){
+      if(a._idb&&!a.url)try{a.url=await idbGet(a._idb)}catch(e){}
+      if(a._idb_t&&!a.thumb)try{a.thumb=await idbGet(a._idb_t)}catch(e){}
+    }
+  }
+}
+restoreIDB();
 function gid(){return'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
 function gfid(){return'f_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
 function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
@@ -548,26 +589,10 @@ function setColorMark(id,c){
 function preFiles(){
   const files=document.getElementById('pFile').files;
   for(const f of files){
-    if(f.type.startsWith('image/')){
-      compressImg(f,(data)=>{pendingFiles.push({name:f.name,type:'image',url:data,thumb:data});renderAttachments()});
-    }else{
-      if(f.size>1*1024*1024){toast('文件过大，限制1MB');continue}
-      const reader=new FileReader();
-      reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
-      reader.readAsDataURL(f);
-    }
+    const reader=new FileReader();
+    reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
+    reader.readAsDataURL(f);
   }
-}
-function compressImg(file,cb){
-  const img=new Image();const url=URL.createObjectURL(file);
-  img.onload=()=>{
-    const MAX=1200;let w=img.width,h=img.height;
-    if(w>MAX||h>MAX){const r=Math.min(MAX/w,MAX/h);w=Math.round(w*r);h=Math.round(h*r)}
-    const c=document.createElement('canvas');c.width=w;c.height=h;
-    const ctx=c.getContext('2d');ctx.drawImage(img,0,0,w,h);
-    let q=0.7,trySize=()=>{const d=c.toDataURL('image/jpeg',q);if(d.length>300*1024&&q>0.3){q-=0.15;trySize()}else{URL.revokeObjectURL(url);cb(d)}};
-    trySize();
-  };img.src=url;
 }
 function renderAttachments(){
   const el=document.getElementById('prevArea');
@@ -622,14 +647,12 @@ function handleShareImp(e){
 function toggleStar(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
   p.starred=!p.starred;p.updatedAt=Date.now();
-  this.classList.toggle('on',p.starred);
-  saveD();
+  saveD();render();
 }
 function togglePin(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
   p.isPinned=!p.isPinned;p.updatedAt=Date.now();
-  this.classList.toggle('on',p.isPinned);
-  saveD();
+  saveD();render();
 }
 
 // Batch
