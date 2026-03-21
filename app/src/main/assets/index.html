@@ -643,9 +643,17 @@ function useTemplate(id){
   editTags=[...(t.tags||[])];renderEditTags();
   document.getElementById('tplArea').style.display='none';
 }
-function editP(id){
+async function editP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
-  editId=id;editTags=[...(p.tags||[])];pendingKeep=[...(p.attachments||[])];
+  editId=id;editTags=[...(p.tags||[])];
+  // Load attachments with display URLs
+  pendingKeep=[];
+  for(const a of(p.attachments||[])){
+    if(a.url||a.thumb){pendingKeep.push(a)}
+    else if(a.id){
+      try{const src=await loadAttachmentURL(a);pendingKeep.push({...a,url:src,thumb:src})}catch(e){pendingKeep.push(a)}
+    }else{pendingKeep.push(a)}
+  };
   document.getElementById('pT').value=p.title;document.getElementById('pC').value=p.content;document.getElementById('pE').value=p.example||'';
   renderEditTags();document.getElementById('pF').innerHTML='<option value="">无</option>'+D.folders.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
   document.getElementById('pF').value=p.folder||'';document.getElementById('mDel').style.display='';document.getElementById('mCopyCount').style.display='';
