@@ -17,9 +17,8 @@ import android.widget.Toast;
 import android.net.Uri;
 import android.content.Intent;
 import android.webkit.ValueCallback;
-import android.view.WindowInsets;
-import android.view.WindowInsetsController;
 import android.graphics.Color;
+import android.view.View;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -30,23 +29,27 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
-        // Edge-to-edge with transparent bars
         Window window = getWindow();
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        window.setStatusBarColor(Color.TRANSPARENT);
+
+        // Light gray status bar matching app background
+        window.setStatusBarColor(Color.parseColor("#F2F2F7"));
         window.setNavigationBarColor(Color.TRANSPARENT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            window.getAttributes().layoutInDisplayCutoutMode =
-                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+
+        // Draw content behind status bar (but status bar stays visible)
+        View decorView = window.getDecorView();
+        int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                  | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                  | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
+        // Light status bar icons (dark icons on light background)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         }
+        decorView.setSystemUiVisibility(flags);
 
         webView = new WebView(this);
         setContentView(webView);
-
-        // Edge-to-edge WebView
-        webView.setFitsSystemWindows(false);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -62,28 +65,22 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Android WebView doesn't support env(safe-area-inset-*)
-                // Inject computed CSS custom properties and apply to all safe-area elements
                 int sb = getStatusBarHeight();
                 int nb = getNavBarHeight();
-                String js = String.format(
-                    "(function(){" +
-                    "var r=document.documentElement;" +
-                    "r.style.setProperty('--sai-top','%dpx');" +
-                    "r.style.setProperty('--sai-bottom','%dpx');" +
-                    "var h=document.querySelector('.hdr');" +
-                    "if(h)h.style.paddingTop='%dpx';" +
-                    "var b=document.querySelector('.batch-bar');" +
-                    "if(b)b.style.bottom='%dpx';" +
-                    "var ft=document.querySelector('.m-ft');" +
-                    "if(ft)ft.style.paddingBottom='%dpx';" +
-                    "var fab=document.querySelector('.fab');" +
-                    "if(fab)fab.style.bottom='calc(%dpx + 8px)';" +
-                    "var toast=document.querySelector('.toast');" +
-                    "if(toast)toast.style.bottom='%dpx';" +
-                    "})()",
-                    sb, nb, sb, nb, nb, nb, nb
-                );
+                // Android WebView doesn't support env(safe-area-inset-*)
+                // Override all safe-area elements with computed px values
+                String js = "(function(){" +
+                    "var s=document.createElement('style');" +
+                    "s.textContent='" +
+                    ".hdr{padding-top:" + (12 + sb) + "px !important}" +
+                    ".search{top:" + sb + "px !important}" +
+                    ".batch-bar{bottom:" + nb + "px !important}" +
+                    ".m-ft{padding-bottom:" + nb + "px !important}" +
+                    ".fab{bottom:calc(" + nb + "px + 8px) !important}" +
+                    ".toast{bottom:" + nb + "px !important}" +
+                    "';" +
+                    "document.head.appendChild(s);" +
+                    "})()";
                 view.evaluateJavascript(js, null);
             }
         });
@@ -109,17 +106,13 @@ public class MainActivity extends Activity {
 
     private int getStatusBarHeight() {
         int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            return getResources().getDimensionPixelSize(resourceId);
-        }
+        if (resourceId > 0) return getResources().getDimensionPixelSize(resourceId);
         return 0;
     }
 
     private int getNavBarHeight() {
         int resourceId = getResources().getIdentifier("navigation_bar_height", "dimen", "android");
-        if (resourceId > 0) {
-            return getResources().getDimensionPixelSize(resourceId);
-        }
+        if (resourceId > 0) return getResources().getDimensionPixelSize(resourceId);
         return 0;
     }
 
@@ -134,11 +127,8 @@ public class MainActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        if (webView.canGoBack()) {
-            webView.goBack();
-        } else {
-            super.onBackPressed();
-        }
+        if (webView.canGoBack()) webView.goBack();
+        else super.onBackPressed();
     }
 
     class ClipboardBridge {
