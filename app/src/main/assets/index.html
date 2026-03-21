@@ -477,75 +477,102 @@ function doDelFolder(id){
 }
 
 
-// ===== IMAGE STACK SWIPE =====
+// ===== IMAGE STACK SWIPE (circular) =====
 function initStack(wrap){
   const items=wrap.querySelectorAll('.stack-item');
   const count=items.length;
-  if(count<=1)return;
-  // Position stacked: back items offset right+down, showing left edge
+  if(!count)return;
+  if(count===1){
+    items[0].style.zIndex=1;
+    items[0].style.transform='scale(1)';
+    items[0].style.clipPath='';
+    return;
+  }
+  if(!wrap._cur)wrap._cur=0;
+  const cur=wrap._cur;
+  // Show 3 layers max: current, next, next-next
   items.forEach((el,i)=>{
-    const depth=count-1-i; // 0=back, count-1=top
-    const ox=depth*8; // horizontal offset
-    const oy=depth*6;  // vertical offset
-    const sc=1-depth*0.03;
-    const rot=(depth-count/2)*1.5;
-    el.style.zIndex=i+1;
-    el.style.transform='translateX('+ox+'px) translateY('+oy+'px) scale('+sc+') rotate('+rot+'deg)';
-    el.style.clipPath='inset(0 0 0 '+(depth*12)+'px)'; // reveal left edge of back items
+    el.style.opacity='0';
+    el.style.pointerEvents='none';
+    el.classList.remove('swiping');
   });
+  const show=Math.min(3,count);
+  for(let d=show-1;d>=0;d--){
+    const idx=(cur+d)%count;
+    const el=items[idx];
+    el.style.opacity='1';
+    el.style.pointerEvents=d===show-1?'auto':'none';
+    el.style.zIndex=d+1;
+    const ox=(show-1-d)*10;
+    const oy=(show-1-d)*7;
+    const sc=1-(show-1-d)*0.035;
+    const rot=(show-1-d-1)*1.8;
+    el.style.transform='translateX('+ox+'px) translateY('+oy+'px) scale('+sc+') rotate('+rot+'deg)';
+    el.style.clipPath=d===show-1?'':'inset(0 0 0 '+((show-1-d)*14)+'px)';
+  }
   // Touch handlers
-  let sx=0,sy=0,cx=0,moving=false,topEl=null;
+  let sx=0,cx=0,moving=false,topEl=null,animating=false;
+  const topIdx=()=>(wrap._cur+show-1)%count;
   const onStart=(e)=>{
+    if(animating)return;
     const t=e.touches?e.touches[0]:e;
-    sx=t.clientX;sy=t.clientY;cx=0;moving=false;
-    topEl=items[items.length-1];if(!topEl)return;
-    wrap.classList.add('swiping');topEl.classList.add('swiping');
+    sx=t.clientX;cx=0;moving=false;
+    topEl=items[topIdx()];if(!topEl)return;
+    topEl.classList.add('swiping');
   };
   const onMove=(e)=>{
-    if(!topEl)return;
+    if(!topEl||animating)return;
     const t=e.touches?e.touches[0]:e;
     cx=t.clientX-sx;
-    if(Math.abs(cx)>8)moving=true;
+    if(Math.abs(cx)>5)moving=true;
     if(!moving)return;
     e.preventDefault&&e.preventDefault();
     const rot=cx*0.06;
     topEl.style.transform='translateX('+cx+'px) rotate('+rot+'deg) scale(1.02)';
-    topEl.style.opacity=Math.max(0.3,1-Math.abs(cx)/300);
+    topEl.style.opacity=Math.max(0.3,1-Math.abs(cx)/250);
   };
   const onEnd=()=>{
-    if(!topEl)return;
-    wrap.classList.remove('swiping');topEl.classList.remove('swiping');
-    if(Math.abs(cx)>80){
-      // Fly away
+    if(!topEl||animating)return;
+    topEl.classList.remove('swiping');
+    if(Math.abs(cx)>60){
+      animating=true;
       const dir=cx>0?1:-1;
-      topEl.style.transform='translateX('+(dir*400)+'px) rotate('+(dir*20)+'deg)';
+      // Current top flies off
+      topEl.style.transition='transform .3s cubic-bezier(.32,.72,0,1),opacity .25s';
+      topEl.style.transform='translateX('+(dir*500)+'px) rotate('+(dir*25)+'deg)';
       topEl.style.opacity='0';
-      topEl.classList.add('flying');
-      // Move to back of stack after animation
+      // Advance index
+      if(dir===-1) wrap._cur=(wrap._cur+1)%count; // left swipe = next
+      else wrap._cur=(wrap._cur-1+count)%count; // right swipe = prev
       setTimeout(()=>{
-        topEl.classList.remove('flying');
+        topEl.style.transition='';
         topEl.style.transform='';topEl.style.opacity='';
-        topEl.style.zIndex=1;
-        wrap.insertBefore(topEl,wrap.firstChild);
-        // Re-init positions
         initStack(wrap);
-      },400);
+        animating=false;
+      },300);
     }else{
       // Snap back
-      const depth=count-1;
-      const ox=depth*8,oy=depth*6,sc=1-(depth)*0.03,rot=(depth-count/2)*1.5;
+      topEl.style.transition='transform .25s cubic-bezier(.25,.46,.45,.94),opacity .2s';
+      const ox=(show-1)*10,oy=(show-1)*7,sc=1-(show-1-1)*0.035,rot=(show-1-1-1)*1.8;
       topEl.style.transform='translateX('+ox+'px) translateY('+oy+'px) scale('+sc+') rotate('+rot+'deg)';
       topEl.style.opacity='';
+      setTimeout(()=>{topEl.style.transition=''},250);
     }
     topEl=null;cx=0;
   };
-  wrap.addEventListener('touchstart',onStart,{passive:true});
-  wrap.addEventListener('touchmove',onMove,{passive:false});
-  wrap.addEventListener('touchend',onEnd,{passive:true});
-  wrap.addEventListener('mousedown',onStart);
-  wrap.addEventListener('mousemove',onMove);
-  wrap.addEventListener('mouseup',onEnd);
-  wrap.addEventListener('mouseleave',onEnd);
+  // Only bind once
+  if(!wrap._bound){
+    wrap._bound=1;
+    wrap.addEventListener('touchstart',onStart,{passive:true});
+    wrap.addEventListener('touchmove',onMove,{passive:false});
+    wrap.addEventListener('touchend',onEnd,{passive:true});
+    wrap.addEventListener('mousedown',onStart);
+    wrap.addEventListener('mousemove',onMove);
+    wrap.addEventListener('mouseup',onEnd);
+    wrap.addEventListener('mouseleave',()=>{if(topEl&&!animating)onEnd()});
+  }
+  // Store handlers for re-init
+  wrap._onStart=onStart;wrap._onMove=onMove;wrap._onEnd=onEnd;
 }
 
 // ===== MODAL =====
