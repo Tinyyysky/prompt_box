@@ -235,27 +235,7 @@ const TPLS=[
   {id:'tpl_d',name:'数据分析',icon:'\uD83D\uDCCA',content:'请帮我分析以下数据：\n\n{{数据}}\n\n**分析维度：**\n1. 数据概览和关键指标\n2. 趋势分析\n3. 异常值检测\n4. 可行的改进建议\n\n**输出格式：** {{格式要求}}',tags:['数据','分析']}
 ];
 let D=loadD(),curF=null,editId=null,editTags=[],pendingFiles=[],pendingKeep=[],selectedIds=new Set(),batchMode=false;
-// Migrate old base64 attachments to IndexedDB
-(async()=>{
-  let migrated=0;
-  for(const p of D.prompts){
-    if(!p.attachments)continue;
-    for(let i=0;i<p.attachments.length;i++){
-      const a=p.attachments[i];
-      if(a.url&&a.url.startsWith('data:')&&!a.id){
-        try{
-          const resp=await fetch(a.url);
-          const buf=await resp.arrayBuffer();
-          const id='att_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
-          await dbSet(id,{data:buf,type:a.type==='image'?'image/jpeg':'application/octet-stream',name:a.name||'file',size:buf.byteLength});
-          p.attachments[i]={id,type:a.type,name:a.name,size:buf.byteLength};
-          migrated++;
-        }catch(e){console.error('migrate err:',e)}
-      }
-    }
-  }
-  if(migrated>0){saveD();console.log('Migrated '+migrated+' attachments to IDB')}
-})();
+
 let activeTagFilters=[],mdMode='edit',dragSrcId=null;
 function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
 function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates)d.templates=[];if(!d.copyHistory)d.copyHistory=[];if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!d.prompts)d.prompts=[];return d}}catch(e){}return defD()}
@@ -643,17 +623,9 @@ function useTemplate(id){
   editTags=[...(t.tags||[])];renderEditTags();
   document.getElementById('tplArea').style.display='none';
 }
-async function editP(id){
+function editP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
-  editId=id;editTags=[...(p.tags||[])];
-  // Load attachments with display URLs
-  pendingKeep=[];
-  for(const a of(p.attachments||[])){
-    if(a.url||a.thumb){pendingKeep.push(a)}
-    else if(a.id){
-      try{const src=await loadAttachmentURL(a);pendingKeep.push({...a,url:src,thumb:src})}catch(e){pendingKeep.push(a)}
-    }else{pendingKeep.push(a)}
-  };
+  editId=id;editTags=[...(p.tags||[])];pendingKeep=[...(p.attachments||[])];
   document.getElementById('pT').value=p.title;document.getElementById('pC').value=p.content;document.getElementById('pE').value=p.example||'';
   renderEditTags();document.getElementById('pF').innerHTML='<option value="">无</option>'+D.folders.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
   document.getElementById('pF').value=p.folder||'';document.getElementById('mDel').style.display='';document.getElementById('mCopyCount').style.display='';
@@ -763,8 +735,8 @@ function renderAttachments(){
   el.innerHTML=pendingKeep.map((a,i)=>a.type==='image'?`<div class="pt"><img src="${a.thumb||a.url}" onclick="previewImg(this.src)" style="cursor:pointer"><div class="rm" onclick="event.stopPropagation();rmKeepAt(${i})">\u00D7</div></div>`:`<div class="pf"><span>\uD83D\uDCCE ${esc(a.name)}</span><button class="rm" onclick="rmKeepAt(${i})">\u00D7</button></div>`).join('')+
   pendingFiles.map((a,i)=>a.type==='image'?`<div class="pt"><img src="${a.thumb||a.url}" onclick="previewImg(this.src)" style="cursor:pointer"><div class="rm" onclick="event.stopPropagation();rmFileAt(${i})">\u00D7</div></div>`:`<div class="pf"><span>\uD83D\uDCCE ${esc(a.name)}</span><button class="rm" onclick="rmFileAt(${i})">\u00D7</button></div>`).join('');
 }
-async function rmKeepAt(i){const a=pendingKeep[i];if(a&&a.id){try{await dbDel(a.id)}catch(e){}}pendingKeep.splice(i,1);renderAttachments()}
-async function rmFileAt(i){const a=pendingFiles[i];if(a&&a.id){try{await dbDel(a.id)}catch(e){}}pendingFiles.splice(i,1);renderAttachments()}
+function rmKeepAt(i){pendingKeep.splice(i,1);renderAttachments()}
+function rmFileAt(i){pendingFiles.splice(i,1);renderAttachments()}
 
 // ===== ACTIONS =====
 function copyP(id){
