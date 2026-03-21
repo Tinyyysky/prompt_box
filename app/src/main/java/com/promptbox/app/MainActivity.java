@@ -1,6 +1,7 @@
 package com.promptbox.app;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -16,6 +17,8 @@ import android.widget.Toast;
 import android.net.Uri;
 import android.content.Intent;
 import android.webkit.ValueCallback;
+import android.graphics.Color;
+import android.view.View;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -25,12 +28,6 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         requestWindowFeature(Window.FEATURE_NO_TITLE);
-
-        // 半透明状态栏 + 内容绘制到状态栏下方
-        getWindow().addFlags(
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS |
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
-        );
 
         webView = new WebView(this);
         setContentView(webView);
@@ -49,20 +46,22 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // 获取状态栏和导航栏高度
+                // Android WebView 不支持 env(safe-area-inset-*)
+                // 用 getStatusBarHeight 计算正确值
                 int sb = resDimen("status_bar_height");
                 int nb = resDimen("navigation_bar_height");
-                // .hdr 的 padding-top 需要叠加状态栏高度（原来 CSS 里有 12px）
-                // 搜索栏 sticky top 也要下移到状态栏下方
                 String js = "(function(){" +
+                    "var r=document.documentElement;" +
+                    "r.style.setProperty('--sai-top','" + sb + "px');" +
+                    "r.style.setProperty('--sai-bottom','" + nb + "px');" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:" + (12 + sb) + "px !important}" +
-                    ".search{top:" + sb + "px !important}" +
-                    ".batch-bar{padding-bottom:" + nb + "px !important}" +
-                    ".m-ft{padding-bottom:" + nb + "px !important}" +
-                    ".fab{bottom:calc(" + nb + "px + 8px) !important}" +
-                    ".toast{bottom:" + nb + "px !important}" +
+                    ".hdr{padding-top:max(12px," + sb + "px) !important}" +
+                    ".search{top:max(0px," + sb + "px) !important}" +
+                    ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
+                    ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
+                    ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
+                    ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
                     "})()";
@@ -92,6 +91,22 @@ public class MainActivity extends Activity {
     private int resDimen(String name) {
         int id = getResources().getIdentifier(name, "dimen", "android");
         return id > 0 ? getResources().getDimensionPixelSize(id) : 0;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // 每次回到前台时设置状态栏样式
+        Window window = getWindow();
+        window.setStatusBarColor(Color.parseColor("#F2F2F7"));
+        window.setNavigationBarColor(Color.TRANSPARENT);
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        View decor = window.getDecorView();
+        int flags = decor.getSystemUiVisibility();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // 深色图标
+        }
+        decor.setSystemUiVisibility(flags);
     }
 
     @Override
