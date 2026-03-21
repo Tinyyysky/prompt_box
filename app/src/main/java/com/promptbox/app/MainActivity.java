@@ -63,19 +63,26 @@ public class MainActivity extends Activity {
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
                 // Android WebView doesn't support env(safe-area-inset-*)
-                // Inject computed values for .hdr and .batch-bar elements
-                int statusBarPx = getStatusBarHeight();
-                int navBarPx = getNavBarHeight();
+                // Inject computed CSS custom properties and apply to all safe-area elements
+                int sb = getStatusBarHeight();
+                int nb = getNavBarHeight();
                 String js = String.format(
                     "(function(){" +
+                    "var r=document.documentElement;" +
+                    "r.style.setProperty('--sai-top','%dpx');" +
+                    "r.style.setProperty('--sai-bottom','%dpx');" +
                     "var h=document.querySelector('.hdr');" +
                     "if(h)h.style.paddingTop='%dpx';" +
                     "var b=document.querySelector('.batch-bar');" +
                     "if(b)b.style.bottom='%dpx';" +
-                    "var bg=document.querySelector('.bottom-grad');" +
-                    "if(bg)bg.style.paddingBottom='%dpx';" +
+                    "var ft=document.querySelector('.m-ft');" +
+                    "if(ft)ft.style.paddingBottom='%dpx';" +
+                    "var fab=document.querySelector('.fab');" +
+                    "if(fab)fab.style.bottom='calc(%dpx + 8px)';" +
+                    "var toast=document.querySelector('.toast');" +
+                    "if(toast)toast.style.bottom='%dpx';" +
                     "})()",
-                    statusBarPx, navBarPx, navBarPx
+                    sb, nb, sb, nb, nb, nb, nb
                 );
                 view.evaluateJavascript(js, null);
             }
