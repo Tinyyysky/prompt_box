@@ -1,26 +1,25 @@
 package com.promptbox.app;
 
 import android.app.Activity;
-import android.app.UiModeManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
+import android.graphics.Color;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.WebView;
-import android.webkit.WebSettings;
-import android.webkit.WebViewClient;
-import android.webkit.WebChromeClient;
-import android.content.ClipboardManager;
-import android.content.ClipData;
 import android.webkit.JavascriptInterface;
-import android.widget.Toast;
-import android.net.Uri;
-import android.content.Intent;
 import android.webkit.ValueCallback;
-import android.graphics.Color;
-import android.view.View;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Toast;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -48,8 +47,6 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // fitsSystemWindows=true 系统自动处理顶部间距
-                // 只处理导航栏底部补偿
                 int nb = resDimen("navigation_bar_height");
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
@@ -60,10 +57,6 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
-                    // 同步系统暗色模式
-                    "if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches){" +
-                    " document.documentElement.setAttribute('data-theme','dark')" +
-                    "}" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
@@ -94,25 +87,17 @@ public class MainActivity extends Activity {
         applySystemBars();
     }
 
-    /** 检测系统暗色模式，设置匹配的状态栏/导航栏颜色 */
     private void applySystemBars() {
         Window w = getWindow();
         boolean dark = isDarkMode();
 
-        // 状态栏：浅色模式 #F2F2F7，深色模式 #1C1C1E
-        if (dark) {
-            w.setStatusBarColor(Color.parseColor("#1C1C1E"));
-        } else {
-            w.setStatusBarColor(Color.parseColor("#F2F2F7"));
-        }
-
-        // 导航栏：透明 + 沉浸式
+        // 状态栏和导航栏全透明 → 让 app 背景色自然透出
+        w.setStatusBarColor(Color.TRANSPARENT);
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
-        // 深色模式：浅色图标（白色） 浅色模式：深色图标
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
@@ -152,7 +137,6 @@ public class MainActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        // 系统主题切换时自动更新
         applySystemBars();
     }
 
