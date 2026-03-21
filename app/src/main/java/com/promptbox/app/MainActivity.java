@@ -20,6 +20,8 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
     private WebView webView;
@@ -34,8 +36,8 @@ public class MainActivity extends Activity {
         webView = new WebView(this);
         setContentView(webView);
 
-        // 让内容绘制到系统栏后面
-        webView.setFitsSystemWindows(false);
+        // fitsSystemWindows 由系统自动处理顶部/底部间距 → 布局正确
+        webView.setFitsSystemWindows(true);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -51,15 +53,12 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                int sb = resDimen("status_bar_height");
+                // fitsSystemWindows=true 系统自动处理间距
+                // 只处理导航栏底部补偿（小白条）
                 int nb = resDimen("navigation_bar_height");
-                // 内容绘制到系统栏后面 → 需要手动加 padding
-                // 状态栏高度加到 .hdr，让标题不被遮挡
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:max(12px," + sb + "px) !important}" +
-                    ".search{top:max(0px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
@@ -89,7 +88,6 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new ClipboardBridge(this), "AndroidClipboard");
         webView.loadUrl("file:///android_asset/index.html");
 
-        // 首次设置系统栏
         lastDark = isDarkMode();
         applySystemBars(lastDark);
     }
@@ -98,21 +96,17 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         boolean dark = isDarkMode();
-        if (dark != lastDark) {
-            lastDark = dark;
-            applySystemBars(dark);
-        }
+        applySystemBars(dark);
     }
 
     private void applySystemBars(boolean dark) {
         Window w = getWindow();
         View dv = w.getDecorView();
 
-        // 全透明 → app 背景透出，深色/浅色自动适配
-        w.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
-        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        // 状态栏颜色匹配 app 背景
         w.setStatusBarColor(Color.TRANSPARENT);
         w.setNavigationBarColor(Color.TRANSPARENT);
+        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
         int flags = dv.getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -130,6 +124,33 @@ public class MainActivity extends Activity {
             }
         }
         dv.setSystemUiVisibility(flags);
+
+        // 小米/HyperOS 专用：强制设置状态栏图标暗色模式
+        setMiuiStatusBarDarkMode(dark);
+    }
+
+    /**
+     * 小米 HyperOS / MIUI 专用 API
+     * 标准 Android 的 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR 在小米系统上可能不生效
+     * 需要调用小米私有 API setStatusBarDarkMode
+     */
+    private void setMiuiStatusBarDarkMode(boolean dark) {
+        try {
+            Class<?> clazz = getWindow().getClass();
+            Method method = clazz.getMethod("setStatusBarDarkMode", boolean.class);
+            method.invoke(getWindow(), !dark);  // true=暗色图标, false=亮色图标
+        } catch (Exception e) {
+            try {
+                // 备选方案：通过 WindowManager.LayoutParams 反射
+                Class<?> lpClass = getWindow().getAttributes().getClass();
+                Field darkFlag = lpClass.getDeclaredField("meizuFlags");
+                darkFlag.setAccessible(true);
+                int flags = darkFlag.getInt(getWindow().getAttributes());
+                darkFlag.setInt(getWindow().getAttributes(), dark ? (flags & ~0x00000020) : (flags | 0x00000020));
+            } catch (Exception e2) {
+                // 不是小米设备，忽略
+            }
+        }
     }
 
     private boolean isDarkMode() {
