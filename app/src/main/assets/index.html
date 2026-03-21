@@ -112,6 +112,21 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .img-viewer{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.img-viewer.open{display:flex}
 .img-viewer img{max-width:92vw;max-height:85vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,.4)}
 .img-preview{position:fixed;inset:0;z-index:700;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;cursor:pointer}.img-preview.open{display:flex}.img-preview img{max-width:92vw;max-height:90vh;object-fit:contain;border-radius:8px}
+
+/* Action Sheet */
+.as-ol{position:fixed;inset:0;background:rgba(0,0,0,.25);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:500;opacity:0;pointer-events:none;transition:opacity .25s}.as-ol.open{opacity:1;pointer-events:auto}
+.as{position:fixed;left:0;right:0;bottom:0;z-index:501;max-width:420px;margin:0 auto;padding:0 10px 10px;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1)}.as.open{transform:translateY(0)}
+.as-body{background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;overflow:hidden;border:.5px solid var(--border)}
+.as-title{padding:14px 16px 6px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.3px;text-transform:uppercase}
+.as-item{display:flex;align-items:center;gap:12px;padding:14px 18px;font-size:16px;font-weight:500;cursor:pointer;transition:background .15s;border-top:.5px solid var(--border)}.as-item:active{background:var(--bg3)}.as-item .as-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0}.as-item.danger{color:var(--danger)}
+.as-cancel{margin-top:8px;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;border:.5px solid var(--border);padding:14px;text-align:center;font-size:16px;font-weight:600;cursor:pointer;transition:background .15s}.as-cancel:active{background:var(--bg3)}
+
+/* More Options Modal */
+.mopt{position:fixed;left:0;right:0;bottom:0;z-index:501;max-width:420px;margin:0 auto;padding:0 10px 10px;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1)}.mopt.open{transform:translateY(0)}
+.mopt-body{background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;overflow:hidden;border:.5px solid var(--border)}
+.mopt-item{display:flex;align-items:center;gap:12px;padding:14px 18px;font-size:16px;font-weight:500;cursor:pointer;transition:background .15s;border-top:.5px solid var(--border)}.mopt-item:active{background:var(--bg3)}.mopt-item .mopt-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.mopt-author{padding:20px 18px;border-top:.5px solid var(--border);text-align:center;font-size:13px;color:var(--text2);line-height:1.6}.mopt-author .mopt-name{font-size:14px;font-weight:600;color:var(--primary);margin-bottom:2px}
+
 </style>
 </head>
 <body>
@@ -147,14 +162,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
     <button class="sb-btn p" onclick="newFolder()">+ 新建文件夹</button>
     <button class="sb-btn g" onclick="openStats()">&#128202; 统计面板</button>
     <button class="sb-btn g" onclick="openTrash()">&#128465; 回收站</button>
-    <button class="sb-btn g" onclick="toggleMoreMenu()">&#128295; 更多选项</button>
-    <div id="moreMenu" style="display:none">
-      <button class="sb-btn g" onclick="openHistory()">&#128203; 复制历史</button>
-      <button class="sb-btn g" onclick="openThemePicker()">&#127912; 主题色</button>
-      <button class="sb-btn g" onclick="exportD()">&#128228; 导出备份</button>
-      <button class="sb-btn g" onclick="importD()">&#128229; 导入数据</button>
-      <button class="sb-btn g" onclick="document.getElementById('shareIn').click()">&#128279; 导入分享</button>
-    </div>
+    <button class="sb-btn g" onclick="openMopt()">&#128295; 更多选项</button>
   </div>
 </div>
 <div class="mbg" id="mbg" onclick="closeM()"></div>
@@ -185,6 +193,21 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 <div class="img-preview" id="imgPreview" onclick="this.classList.remove('open')"><img id="imgPreviewSrc"></div>
 <input type="file" id="impIn" accept=".json" style="display:none" onchange="handleImp(event)">
 <input type="file" id="shareIn" accept=".json" style="display:none" onchange="handleShareImp(event)">
+
+<!-- Action Sheet for Card Actions -->
+<div class="as-ol" id="asOL" onclick="closeAS()"></div>
+<div class="as" id="as">
+  <div class="as-body" id="asBody"></div>
+  <div class="as-cancel" onclick="closeAS()">取消</div>
+</div>
+
+<!-- More Options Modal -->
+<div class="as-ol" id="moptOL" onclick="closeMopt()"></div>
+<div class="mopt" id="mopt">
+  <div class="mopt-body" id="moptBody"></div>
+  <div class="as-cancel" onclick="closeMopt()">取消</div>
+</div>
+
 <script>
 
 // ===== DATA =====
@@ -562,7 +585,7 @@ function togglePin(id){
 // Batch
 function cardTap(id){
   if(batchMode){if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);updateBatch();render();return}
-  editP(id);
+  openAS(id);
 }
 function updateBatch(){document.getElementById('batchCnt').textContent='\u5DF2\u9009 '+selectedIds.size}
 function exitBatch(){batchMode=false;selectedIds.clear();document.getElementById('batchBar').style.display='none';render()}
@@ -730,6 +753,123 @@ function previewImg(src){
 function previewImg(src){document.getElementById('imgViewerSrc').src=src;document.getElementById('imgViewer').classList.add('open')}
 function closeImgViewer(){document.getElementById('imgViewer').classList.remove('open')}
 function toggleMoreMenu(){document.getElementById('moreMenu').style.display=document.getElementById('moreMenu').style.display==='none'?'flex':'none'}
+
+// ===== ACTION SHEET =====
+let asCardId = null;
+function openAS(id) {
+  asCardId = id;
+  const p = D.prompts.find(x => x.id === id);
+  if (!p) return;
+  const isTrash = curF === '__trash__';
+  let items = '';
+  if (isTrash) {
+    items = `
+      <div class="as-item" onclick="restoreP('${id}');closeAS()"><span class="as-icon">🔄</span>恢复提示词</div>
+      <div class="as-item danger" onclick="permDel('${id}');closeAS()"><span class="as-icon">🗑️</span>永久删除</div>`;
+  } else {
+    items = `
+      <div class="as-item" onclick="copyP('${id}');closeAS()"><span class="as-icon">📋</span>复制内容</div>
+      <div class="as-item" onclick="editP('${id}');closeAS()"><span class="as-icon">✏️</span>编辑</div>
+      <div class="as-item" onclick="showMoveModal('${id}')"><span class="as-icon">📁</span>移动到文件夹</div>
+      <div class="as-item" onclick="showTagModal('${id}')"><span class="as-icon">🏷️</span>编辑标签</div>
+      <div class="as-item" onclick="toggleStarFromAS('${id}')"><span class="as-icon">${p.starred ? '⭐' : '☆'}</span>${p.starred ? '取消收藏' : '收藏'}</div>
+      <div class="as-item" onclick="togglePinFromAS('${id}')"><span class="as-icon">📌</span>${p.isPinned ? '取消置顶' : '置顶'}</div>
+      <div class="as-item" onclick="shareP('${id}');closeAS()"><span class="as-icon">📤</span>分享</div>
+      <div class="as-item" onclick="batchFromAS('${id}')"><span class="as-icon">☑️</span>多选模式</div>
+      <div class="as-item danger" onclick="delFromAS('${id}')"><span class="as-icon">🗑️</span>删除</div>`;
+  }
+  document.getElementById('asBody').innerHTML = '<div class="as-title">' + esc(p.title) + '</div>' + items;
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
+}
+function closeAS() {
+  document.getElementById('asOL').classList.remove('open');
+  document.getElementById('as').classList.remove('open');
+  asCardId = null;
+}
+function toggleStarFromAS(id) {
+  const p = D.prompts.find(x => x.id === id); if (!p) return;
+  p.starred = !p.starred; p.updatedAt = Date.now();
+  saveD(); render(); toast(p.starred ? '已收藏' : '已取消收藏');
+}
+function togglePinFromAS(id) {
+  const p = D.prompts.find(x => x.id === id); if (!p) return;
+  p.isPinned = !p.isPinned; p.updatedAt = Date.now();
+  saveD(); render(); toast(p.isPinned ? '已置顶' : '已取消置顶');
+}
+function batchFromAS(id) {
+  closeAS();
+  batchMode = true; selectedIds.add(id);
+  document.getElementById('batchBar').style.display = 'flex';
+  updateBatch(); render();
+}
+function delFromAS(id) {
+  closeAS();
+  const p = D.prompts.find(x => x.id === id);
+  if (p) { p.deleted = true; saveD(); render(); toast('已移至回收站'); }
+}
+
+// Move to folder sub-modal
+function showMoveModal(id) {
+  const p = D.prompts.find(x => x.id === id); if (!p) return;
+  let items = '<div class="as-title">移动到文件夹</div>';
+  items += `<div class="as-item" onclick="moveToFolder('${id}','')"><span class="as-icon">📂</span>无文件夹</div>`;
+  D.folders.forEach(f => {
+    const cur = p.folder === f.id ? ' ✓' : '';
+    items += `<div class="as-item" onclick="moveToFolder('${id}','${f.id}')"><span class="as-icon"><span class="fdot" style="background:${f.color};display:inline-block;width:12px;height:12px;border-radius:50%"></span></span>${esc(f.name)}${cur}</div>`;
+  });
+  document.getElementById('asBody').innerHTML = items;
+}
+function moveToFolder(id, folderId) {
+  const p = D.prompts.find(x => x.id === id);
+  if (p) { p.folder = folderId; p.updatedAt = Date.now(); saveD(); render(); }
+  closeAS(); toast('已移动');
+}
+
+// Tag edit sub-modal
+function showTagModal(id) {
+  const p = D.prompts.find(x => x.id === id); if (!p) return;
+  const tags = p.tags || [];
+  let items = '<div class="as-title">编辑标签</div>';
+  items += `<div class="as-item" style="padding:10px 18px"><input type="text" id="asTagIn" placeholder="输入新标签回车添加" style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-radius:10px;padding:10px 12px;font-size:15px" onkeydown="if(event.key==='Enter'){event.preventDefault();addTagFromAS('${id}',this.value.trim());this.value=''}"></div>`;
+  tags.forEach((t, i) => {
+    items += `<div class="as-item" onclick="removeTagFromAS('${id}',${i})"><span class="as-icon">🏷️</span>${esc(t)}<span style="margin-left:auto;color:var(--danger);font-size:14px">×</span></div>`;
+  });
+  document.getElementById('asBody').innerHTML = items;
+  setTimeout(() => { const inp = document.getElementById('asTagIn'); if (inp) inp.focus(); }, 350);
+}
+function addTagFromAS(id, tag) {
+  if (!tag) return;
+  const p = D.prompts.find(x => x.id === id); if (!p) return;
+  if (!p.tags) p.tags = [];
+  if (p.tags.includes(tag)) { toast('标签已存在'); return; }
+  p.tags.push(tag); saveD(); showTagModal(id); render(); toast('已添加标签');
+}
+function removeTagFromAS(id, idx) {
+  const p = D.prompts.find(x => x.id === id); if (!p || !p.tags) return;
+  p.tags.splice(idx, 1); saveD(); showTagModal(id); render();
+}
+
+// ===== MORE OPTIONS MODAL =====
+function openMopt() {
+  document.getElementById('moptBody').innerHTML = `
+    <div class="mopt-item" onclick="openHistory();closeMopt()"><span class="mopt-icon">📋</span>复制历史</div>
+    <div class="mopt-item" onclick="openThemePicker();closeMopt()"><span class="mopt-icon">🎨</span>主题色</div>
+    <div class="mopt-item" onclick="exportD();closeMopt()"><span class="mopt-icon">💾</span>导出备份</div>
+    <div class="mopt-item" onclick="importD();closeMopt()"><span class="mopt-icon">📥</span>导入数据</div>
+    <div class="mopt-item" onclick="document.getElementById('shareIn').click();closeMopt()"><span class="mopt-icon">🔗</span>导入分享</div>
+    <div class="mopt-author">
+      <div class="mopt-name">🦞 关于</div>
+      <div>@皮皮灭与由mimo-v2-pro驱动的openclaw🦞共同开发</div>
+    </div>`;
+  document.getElementById('moptOL').classList.add('open');
+  document.getElementById('mopt').classList.add('open');
+}
+function closeMopt() {
+  document.getElementById('moptOL').classList.remove('open');
+  document.getElementById('mopt').classList.remove('open');
+}
+
 function init(){
   applyTheme();
   if(D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
