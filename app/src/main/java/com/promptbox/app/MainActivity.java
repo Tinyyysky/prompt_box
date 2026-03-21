@@ -58,13 +58,6 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
-                    // Debug
-                    "var d=document.createElement('div');" +
-                    "d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,.85);color:#0f0;font:12px/1.5 monospace;padding:8px 12px;white-space:pre-wrap;';" +
-                    "var hdr=document.querySelector('.hdr');" +
-                    "var hR=hdr?hdr.getBoundingClientRect():null;" +
-                    "d.textContent='DBG: vh='+window.innerHeight+' sb=' + (" + resDimen("status_bar_height") + ") + ' nb=' + (" + nb + ") + ' hdr.top=' + (hR?hR.top:'?') + ' hdr.pad=' + (hdr?getComputedStyle(hdr).paddingTop:'?');" +
-                    "document.body.appendChild(d);" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
