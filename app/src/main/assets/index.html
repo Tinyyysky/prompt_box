@@ -251,49 +251,8 @@ function saveDNow(){
   }
 }
 // IndexedDB for large attachment data
-const IDB_DB='promptbox_idb',IDB_STORE='blobs';
-function idb(){return new Promise((res,rej)=>{const r=indexedDB.open(IDB_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-async function idbSet(key,val){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).put(val,key);tx.oncomplete=res;tx.onerror=rej})}
-async function idbGet(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readonly');const r=tx.objectStore(IDB_STORE).get(key);r.onsuccess=()=>res(r.result);r.onerror=rej})}
-async function idbDel(key){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).delete(key);tx.oncomplete=res;tx.onerror=rej})}
-function extractBigData(cb){
-  let moved=0;
-  const ps=D.prompts||[];
-  for(const p of ps){
-    if(!p.attachments)continue;
-    for(let i=0;i<p.attachments.length;i++){
-      const a=p.attachments[i];
-      if(a.url&&a.url.length>50000&&!a._idb){
-        const k='att_'+p.id+'_'+i;
-        idbSet(k,a.url).then(()=>{a._idb=k;delete a.url;if(a.thumb&&a.thumb.length>50000){idbSet(k+'_t',a.thumb).then(()=>{a._idb_t=k+'_t';delete a.thumb})}}).catch(()=>{});
-        moved++;
-      }
-    }
-  }
-  if(moved)toast('部分附件已转存');setTimeout(cb,200);
-}
-// Restore IDB data on load
-async function restoreIDB(){
-  for(const p of(D.prompts||[])){
-    if(!p.attachments)continue;
-    for(const a of p.attachments){
-      if(a._idb&&!a.url)try{a.url=await idbGet(a._idb)}catch(e){}
-      if(a._idb_t&&!a.thumb)try{a.thumb=await idbGet(a._idb_t)}catch(e){}
-    }
-  }
-}
-restoreIDB();
-function gid(){return'p_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
-function gfid(){return'f_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)}
-function esc(s){return s?s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'):''}
-function vars(c){const m=c.match(/\{\{([^}]+)\}\}/g);return m?[...new Set(m.map(v=>v.slice(2,-2).trim()))]:[]}
-function fdate(ts){const d=new Date(ts);return(d.getMonth()+1)+'/'+d.getDate()+' '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')}
-function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove('show'),2200)}
-function showKbd(m){const h=document.getElementById('kbdHint');h.textContent=m;h.classList.add('show');clearTimeout(showKbd._t);showKbd._t=setTimeout(()=>h.classList.remove('show'),1200)}
-function getVMem(){try{return JSON.parse(localStorage.getItem('promptbox_vmem')||'{}')}catch(e){return{}}}
-function setVMem(m){try{localStorage.setItem('promptbox_vmem',JSON.stringify(m))}catch(e){}}
-function saveVarVal(name,val){const m=getVMem();if(val)m[name]=val;setVMem(m)}
-function getVarVal(name){return getVMem()[name]||''}
+// Attachment storage: base64 in localStorage
+
 
 // Markdown render
 function mdRender(s){
@@ -378,30 +337,10 @@ function render(){
     let atG='';
     if(hasImg){
       const items=imgs.map((a,idx)=>{
-        const src=a.url||a.thumb||'';
-        if(src){
-          return `<div class="stack-item"><img src="${src}" alt=""></div>`;
-        }
-        return `<div class="stack-item" data-att-id="${a.id||''}"><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;opacity:.3">\uD83D\uDDBC\uFE0F</div></div>`;
-      }).join('');
+      const items=imgs.map((a,idx)=>`<div class="stack-item"><img src="${a.thumb||a.url||''}" alt=""></div>`).join('');
       const cnt=imgs.length>1?`<div class="stack-count">${imgs.length} 张</div>`:'';
-      atG=`<div class="card-gal" onclick="event.stopPropagation()" data-prompt-id="${p.id}"><div class="stack-wrap">${items}${cnt}</div></div>`;
-      // Lazy load images without url from IDB
-      setTimeout(()=>{
-        const gal=document.querySelector(`.card-gal[data-prompt-id="${p.id}"]`);
-        if(!gal)return;
-        gal.querySelectorAll('.stack-item[data-att-id]').forEach(async el=>{
-          const attId=el.dataset.attId;
-          if(!attId)return;
-          try{
-            const src=await loadAttachmentURL({id:attId});
-            if(src)el.innerHTML=`<img src="${src}" alt="">`;
-            else el.innerHTML=`<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:13px;opacity:.5">\u65E0\u6CD5\u52A0\u8F7D</div>`;
-          }catch(e){el.innerHTML=''}
-        });
-        const wrap=gal.querySelector('.stack-wrap');
-        if(wrap&&!wrap._inited){wrap._inited=1;initStack(wrap)}
-      },50);
+      atG=`<div class="card-gal" onclick="event.stopPropagation()"><div class="stack-wrap">${items}${cnt}</div></div>`;
+      setTimeout(()=>{document.querySelectorAll('.stack-wrap').forEach(w=>{if(!w._inited){w._inited=1;initStack(w)}})},50);
     }
     const isMobile='ontouchstart'in window;
     const dragAttr=isMobile?'':`draggable="true" ondragstart="onDragStart(event,'${p.id}')" ondragover="onDragOver(event)" ondragenter="onDragEnter(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event,'${p.id}')`;
@@ -724,10 +663,29 @@ function setColorMark(id,c){
 function preFiles(){
   const files=document.getElementById('pFile').files;
   for(const f of files){
-    saveAttachment(f).then(att=>{
-      pendingFiles.push(att);
-      renderAttachments();
-    }).catch(e=>{console.error(e);toast('保存附件失败')});
+    if(f.type.startsWith('image/')&&f.size>200000){
+      const img=new Image();const url=URL.createObjectURL(f);
+      img.onload=()=>{
+        const cv=document.createElement('canvas');
+        let w=img.width,h=img.height;
+        if(w>1200){h=h*1200/w;w=1200}
+        cv.width=w;cv.height=h;
+        cv.getContext('2d').drawImage(img,0,0,w,h);
+        cv.toBlob(bl=>{
+          const r=new FileReader();
+          r.onload=e=>{pendingFiles.push({name:f.name,type:'image',url:e.target.result,thumb:e.target.result});renderAttachments()};
+          r.readAsDataURL(bl);
+          URL.revokeObjectURL(url);
+        },'image/jpeg',0.65);
+      };
+      img.src=url;
+    }else{
+      const reader=new FileReader();
+      reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
+      reader.readAsDataURL(f);
+    }
+  }
+}).catch(e=>{console.error(e);toast('保存附件失败')});
   }
 }
 function renderAttachments(){
