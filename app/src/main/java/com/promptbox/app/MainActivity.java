@@ -62,17 +62,20 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Inject CSS to handle status bar inset (safe area)
-                int statusBarHeight = getStatusBarHeight();
-                int navBarHeight = getNavBarHeight();
+                // Android WebView doesn't support env(safe-area-inset-*)
+                // Inject computed values for .hdr and .batch-bar elements
+                int statusBarPx = getStatusBarHeight();
+                int navBarPx = getNavBarHeight();
                 String js = String.format(
-                    "javascript:(function() {" +
-                    "  var style = document.createElement('style');" +
-                    "  style.textContent = 'html { padding-top: %dpx !important; padding-bottom: %dpx !important; box-sizing: border-box; }" +
-                    "  body { padding-top: env(safe-area-inset-top, %dpx) !important; padding-bottom: env(safe-area-inset-bottom, %dpx) !important; }';" +
-                    "  document.head.appendChild(style);" +
+                    "(function(){" +
+                    "var h=document.querySelector('.hdr');" +
+                    "if(h)h.style.paddingTop='%dpx';" +
+                    "var b=document.querySelector('.batch-bar');" +
+                    "if(b)b.style.bottom='%dpx';" +
+                    "var bg=document.querySelector('.bottom-grad');" +
+                    "if(bg)bg.style.paddingBottom='%dpx';" +
                     "})()",
-                    statusBarHeight, navBarHeight, statusBarHeight, navBarHeight
+                    statusBarPx, navBarPx, navBarPx
                 );
                 view.evaluateJavascript(js, null);
             }
