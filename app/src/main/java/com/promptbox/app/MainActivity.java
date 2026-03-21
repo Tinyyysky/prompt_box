@@ -10,6 +10,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -20,13 +21,12 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
+    private static final String TAG = "PromptBox";
     private WebView webView;
     private ValueCallback<Uri[]> fileCallback;
-    private boolean lastDark = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,9 +35,6 @@ public class MainActivity extends Activity {
 
         webView = new WebView(this);
         setContentView(webView);
-
-        // fitsSystemWindows 由系统自动处理顶部/底部间距 → 布局正确
-        webView.setFitsSystemWindows(true);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
@@ -53,8 +50,6 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // fitsSystemWindows=true 系统自动处理间距
-                // 只处理导航栏底部补偿（小白条）
                 int nb = resDimen("navigation_bar_height");
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
@@ -88,26 +83,31 @@ public class MainActivity extends Activity {
         webView.addJavascriptInterface(new ClipboardBridge(this), "AndroidClipboard");
         webView.loadUrl("file:///android_asset/index.html");
 
-        lastDark = isDarkMode();
-        applySystemBars(lastDark);
+        applySystemBars();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        boolean dark = isDarkMode();
-        applySystemBars(dark);
+        applySystemBars();
     }
 
-    private void applySystemBars(boolean dark) {
+    private void applySystemBars() {
         Window w = getWindow();
-        View dv = w.getDecorView();
+        boolean dark = isDarkMode();
 
-        // 状态栏颜色匹配 app 背景
-        w.setStatusBarColor(Color.TRANSPARENT);
+        // 固体色状态栏
+        if (dark) {
+            w.setStatusBarColor(Color.parseColor("#1C1C1E"));
+        } else {
+            w.setStatusBarColor(Color.parseColor("#F2F2F7"));
+        }
+
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
+        // 标准 Android API
+        View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
@@ -125,31 +125,18 @@ public class MainActivity extends Activity {
         }
         dv.setSystemUiVisibility(flags);
 
-        // 小米/HyperOS 专用：强制设置状态栏图标暗色模式
-        setMiuiStatusBarDarkMode(dark);
+        // 小米 MIUI/HyperOS 私有 API
+        applyMiuiDarkMode(dark);
     }
 
-    /**
-     * 小米 HyperOS / MIUI 专用 API
-     * 标准 Android 的 SYSTEM_UI_FLAG_LIGHT_STATUS_BAR 在小米系统上可能不生效
-     * 需要调用小米私有 API setStatusBarDarkMode
-     */
-    private void setMiuiStatusBarDarkMode(boolean dark) {
+    private void applyMiuiDarkMode(boolean dark) {
+        // 小米 Window 有 setStatusBarDarkMode(boolean) 方法
         try {
-            Class<?> clazz = getWindow().getClass();
-            Method method = clazz.getMethod("setStatusBarDarkMode", boolean.class);
-            method.invoke(getWindow(), !dark);  // true=暗色图标, false=亮色图标
+            Method method = Window.class.getMethod("setStatusBarDarkMode", boolean.class);
+            method.invoke(getWindow(), dark);
+            Log.d(TAG, "Xiaomi setStatusBarDarkMode: " + dark);
         } catch (Exception e) {
-            try {
-                // 备选方案：通过 WindowManager.LayoutParams 反射
-                Class<?> lpClass = getWindow().getAttributes().getClass();
-                Field darkFlag = lpClass.getDeclaredField("meizuFlags");
-                darkFlag.setAccessible(true);
-                int flags = darkFlag.getInt(getWindow().getAttributes());
-                darkFlag.setInt(getWindow().getAttributes(), dark ? (flags & ~0x00000020) : (flags | 0x00000020));
-            } catch (Exception e2) {
-                // 不是小米设备，忽略
-            }
+            Log.d(TAG, "Not Xiaomi device or method unavailable: " + e.getMessage());
         }
     }
 
@@ -175,11 +162,7 @@ public class MainActivity extends Activity {
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
-        boolean dark = isDarkMode();
-        if (dark != lastDark) {
-            lastDark = dark;
-            applySystemBars(dark);
-        }
+        applySystemBars();
     }
 
     @Override
