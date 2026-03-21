@@ -45,15 +45,8 @@ public class MainActivity extends Activity {
         webView = new WebView(this);
         setContentView(webView);
 
-        // Enable edge-to-edge for WebView
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            webView.setFitsSystemWindows(false);
-            webView.setOnApplyWindowInsetsListener((v, insets) -> {
-                // Adjust WebView padding based on system bar insets
-                android.view.ViewCompat.setOnApplyWindowInsetsListener(v, null);
-                return insets;
-            });
-        }
+        // Edge-to-edge WebView
+        webView.setFitsSystemWindows(false);
 
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
