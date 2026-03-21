@@ -1,6 +1,9 @@
 package com.promptbox.app;
 
 import android.app.Activity;
+import android.app.UiModeManager;
+import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.Window;
@@ -11,7 +14,6 @@ import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
 import android.content.ClipboardManager;
 import android.content.ClipData;
-import android.content.Context;
 import android.webkit.JavascriptInterface;
 import android.widget.Toast;
 import android.net.Uri;
@@ -46,8 +48,8 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // fitsSystemWindows=true 已经处理了顶部间距
-                // 只需要处理导航栏底部补偿
+                // fitsSystemWindows=true 系统自动处理顶部间距
+                // 只处理导航栏底部补偿
                 int nb = resDimen("navigation_bar_height");
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
@@ -58,6 +60,10 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
+                    // 同步系统暗色模式
+                    "if(window.matchMedia&&window.matchMedia('(prefers-color-scheme:dark)').matches){" +
+                    " document.documentElement.setAttribute('data-theme','dark')" +
+                    "}" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
@@ -85,17 +91,48 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        applySystemBars();
+    }
+
+    /** 检测系统暗色模式，设置匹配的状态栏/导航栏颜色 */
+    private void applySystemBars() {
         Window w = getWindow();
-        // 状态栏 = 浅灰色（匹配 app 背景 #F2F2F7）+ 深色图标
-        w.setStatusBarColor(Color.parseColor("#F2F2F7"));
+        boolean dark = isDarkMode();
+
+        // 状态栏：浅色模式 #F2F2F7，深色模式 #1C1C1E
+        if (dark) {
+            w.setStatusBarColor(Color.parseColor("#1C1C1E"));
+        } else {
+            w.setStatusBarColor(Color.parseColor("#F2F2F7"));
+        }
+
+        // 导航栏：透明 + 沉浸式
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
+        // 深色模式：浅色图标（白色） 浅色模式：深色图标
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            if (dark) {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            } else {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (dark) {
+                flags &= ~View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            } else {
+                flags |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+            }
         }
         dv.setSystemUiVisibility(flags);
+    }
+
+    private boolean isDarkMode() {
+        int nightFlags = getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK;
+        return nightFlags == Configuration.UI_MODE_NIGHT_YES;
     }
 
     private int resDimen(String name) {
@@ -113,6 +150,13 @@ public class MainActivity extends Activity {
     }
 
     @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // 系统主题切换时自动更新
+        applySystemBars();
+    }
+
+    @Override
     public void onBackPressed() {
         if (webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
@@ -126,7 +170,7 @@ public class MainActivity extends Activity {
         public void copy(String text) {
             ClipboardManager cm = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
             cm.setPrimaryClip(ClipData.newPlainText("prompt", text));
-            runOnUiThread(() -> Toast.makeText(ctx, "\u5DF2\u590D\u5236", Toast.LENGTH_SHORT).show());
+            ((Activity) ctx).runOnUiThread(() -> Toast.makeText(ctx, "\u5DF2\u590D\u5236", Toast.LENGTH_SHORT).show());
         }
     }
 }
