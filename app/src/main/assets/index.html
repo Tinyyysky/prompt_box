@@ -29,9 +29,9 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .tag-filter-bar{padding:4px 12px;display:flex;gap:6px;flex-wrap:wrap;overflow:hidden;transition:max-height .3s;max-height:0}.tag-filter-bar.show{max-height:60px;padding:6px 12px}
 .tf-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff;animation:ci .2s}.tf-chip button{font-size:10px;opacity:.7;margin-left:2px}
 .trash-b{background:rgba(255,59,48,.08);color:var(--danger);padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}.trash-b button{background:var(--danger);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
-.batch-bar{position:fixed;bottom:max(20px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);z-index:50;background:var(--text);color:var(--bg);padding:10px 16px;border-radius:var(--radius);display:flex;align-items:center;gap:12px;box-shadow:0 4px 24px rgba(0,0,0,.25);animation:batchIn .3s cubic-bezier(.32,.72,0,1)}
+.batch-bar{position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:520px;margin:0 auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);padding:0 10px 10px}.batch-bar.open{transform:translateY(0)}
 @keyframes batchIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.batch-bar button{font-size:16px;padding:6px}.batch-bar .batch-cnt{font-size:13px;font-weight:600;margin-right:8px;white-space:nowrap}.batch-bar .batch-x{margin-left:auto;opacity:.5;font-size:14px}
+.batch-bar .batch-body{background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;overflow:hidden;border:.5px solid var(--border)}.batch-bar .batch-hd{padding:14px 16px 6px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.3px}.batch-bar .batch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:.5px solid var(--border)}.batch-bar .batch-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:background .15s;border-right:.5px solid var(--border)}.batch-bar .batch-item:nth-child(4n){border-right:none}.batch-bar .batch-item:active{background:var(--bg3)}.batch-bar .batch-item .bi-icon{font-size:24px}.batch-bar .batch-item.danger{color:var(--danger)}.batch-bar .batch-cancel{margin-top:8px;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;border:.5px solid var(--border);padding:14px;text-align:center;font-size:16px;font-weight:600;cursor:pointer;transition:background .15s}.batch-bar .batch-cancel:active{background:var(--bg3)}
 .cards{padding:4px 12px 100px}.cards.g1{display:flex;flex-direction:column;gap:10px}.cards.g2{columns:2;column-gap:10px}.cards.g2 .card{break-inside:avoid;margin-bottom:10px;display:inline-block;width:100%}@media(max-width:380px){.cards.g2{columns:1}}
 .card{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .22s cubic-bezier(.32,.72,0,1),box-shadow .22s;border-left:4px solid transparent;position:relative}.card:active{transform:scale(.97)}.card:hover{box-shadow:var(--shadow-hover)}
 .card.anim{animation:cardIn .45s cubic-bezier(.32,.72,0,1) both}
@@ -54,13 +54,13 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .card-ft .info{margin-left:auto;font-size:10px;color:var(--text3)}
 .sb-ol{position:fixed;inset:0;background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}.sb-ol.open{opacity:1;pointer-events:auto}
 .sb{position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg2);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));z-index:201;transform:translateX(-100%);transition:transform .35s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;border-right:.5px solid var(--border)}.sb.open{transform:translateX(0)}
-.sb-hd{padding:20px 16px 12px;display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
+.sb-hd{padding:5px 16px 12px;display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
 .sb-bd{flex:1;overflow-y:auto;padding:4px 8px}
 .sb-i{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:15px;font-weight:500;transition:all .15s}.sb-i:active{background:var(--bg3)}.sb-i.on{background:var(--primary-soft);color:var(--primary)}
 .sb-i .ic{font-size:18px;width:28px;text-align:center}.sb-i .badge{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;background:var(--bg3);padding:2px 8px;border-radius:10px}
 .sb-i .df{margin-left:4px;font-size:11px;color:var(--danger);opacity:0;transition:opacity .2s;padding:4px 6px}.sb-i:active .df{opacity:.6}
 .sb-i .fdot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-.sb-act{padding:12px;border-top:.5px solid var(--border);display:flex;flex-direction:column;gap:6px}
+.sb-act{padding:12px;border-top:.5px solid var(--border);display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .sb-btn{padding:10px 14px;border-radius:var(--radius-sm);font-size:14px;font-weight:500;text-align:center;transition:all .15s}.sb-btn:active{opacity:.6}.sb-btn.p{background:var(--primary);color:#fff}.sb-btn.g{background:var(--bg3);color:var(--text2)}
 .mbg{position:fixed;inset:0;background:rgba(0,0,0,.18);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);z-index:300;opacity:0;pointer-events:none;transition:opacity .3s}.mbg.open{opacity:1;pointer-events:auto}
 .m{position:fixed;left:0;right:0;bottom:0;z-index:301;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);max-width:520px;margin:0 auto;max-height:92vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);border-top:.5px solid var(--border)}.m.open{transform:translateY(0)}
@@ -146,13 +146,17 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 </div>
 <button class="fab" onclick="openM()" id="fabBtn">+</button>
 </div>
-<div class="batch-bar" id="batchBar" style="display:none">
-  <span class="batch-cnt" id="batchCnt">已选 0</span>
-  <button onclick="batchTag()" title="加标签">&#127991;</button>
-  <button onclick="batchMove()" title="移动">&#128193;</button>
-  <button onclick="batchExport()" title="导出选中">&#128228;</button>
-  <button onclick="batchDel()" title="删除">&#128465;</button>
-  <button class="batch-x" onclick="exitBatch()">&#10005;</button>
+<div class="batch-bar" id="batchBar">
+  <div class="batch-body">
+    <div class="batch-hd" id="batchCnt">已选 0</div>
+    <div class="batch-grid">
+      <div class="batch-item" onclick="batchTag()"><span class="bi-icon">🏷️</span>加标签</div>
+      <div class="batch-item" onclick="batchMove()"><span class="bi-icon">📁</span>移动</div>
+      <div class="batch-item" onclick="batchExport()"><span class="bi-icon">📤</span>导出</div>
+      <div class="batch-item danger" onclick="batchDel()"><span class="bi-icon">🗑️</span>删除</div>
+    </div>
+  </div>
+  <div class="batch-cancel" onclick="exitBatch()">取消</div>
 </div>
 <div class="sb-ol" id="sbOL" onclick="toggleSB()"></div>
 <div class="sb" id="sb">
@@ -371,7 +375,7 @@ function renderSB(){
   }
   el.innerHTML=html;
 }
-function setFolder(id){curF=id;selectedIds.clear();batchMode=false;document.getElementById('batchBar').style.display='none';document.getElementById('trashB').style.display=id==='__trash__'?'flex':'none';
+function setFolder(id){curF=id;selectedIds.clear();batchMode=false;document.getElementById('batchBar').classList.remove('open');document.getElementById('trashB').style.display=id==='__trash__'?'flex':'none';
   const titles={null:'提示词盒子','__star__':'收藏','__pin__':'置顶','__trash__':'回收站'};
   document.getElementById('hdrT').textContent=titles[id]||(D.folders.find(f=>f.id===id)||{}).name||'提示词盒子';
   toggleSB();render();
@@ -585,22 +589,38 @@ function togglePin(id){
 // Batch
 function cardTap(id){
   if(batchMode){if(selectedIds.has(id))selectedIds.delete(id);else selectedIds.add(id);updateBatch();render();return}
-  openAS(id);
+  editP(id);
 }
-function updateBatch(){document.getElementById('batchCnt').textContent='\u5DF2\u9009 '+selectedIds.size}
-function exitBatch(){batchMode=false;selectedIds.clear();document.getElementById('batchBar').style.display='none';render()}
+function updateBatch(){document.getElementById('batchCnt').textContent='已选 '+selectedIds.size+' 个提示词'}
+function exitBatch(){batchMode=false;selectedIds.clear();document.getElementById('batchBar').classList.remove('open');render()}
 function batchTag(){
-  const t=prompt('\u8F93\u5165\u6807\u7B7E');if(!t)return;
+  let html='<div class="as-title">批量添加标签</div>';
+  html+='<div style="padding:12px 16px"><input id="batchTagInput" type="text" placeholder="输入标签名称" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:15px;color:var(--text);outline:none;box-sizing:border-box"></div>';
+  const allTags=[...new Set(D.prompts.flatMap(p=>p.tags||[]))];
+  if(allTags.length){html+='<div style="padding:0 16px 8px;font-size:12px;color:var(--text2)">已有标签</div><div style="padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px">'+allTags.map(t=>'<span class="tag-chip" onclick="document.getElementById(\'batchTagInput\').value=\''+esc(t)+'\'" style="cursor:pointer">'+esc(t)+'</span>').join('')+'</div>';}
+  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doBatchTag()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
+  document.getElementById('asBody').innerHTML=html;
+  document.getElementById('asOvl').classList.add('open');
+  setTimeout(()=>{const inp=document.getElementById('batchTagInput');if(inp)inp.focus()},100);
+}
+function doBatchTag(){
+  const t=document.getElementById('batchTagInput')?.value?.trim();if(!t){closeAS();return}
   D.prompts.forEach(p=>{if(selectedIds.has(p.id)){if(!p.tags)p.tags=[];if(!p.tags.includes(t))p.tags.push(t)}});
-  saveD();exitBatch();render();toast('\u5DF2\u6DFB\u52A0\u6807\u7B7E');
+  saveD();closeAS();exitBatch();render();toast('已添加标签');
 }
 function batchMove(){
-  const fs=D.folders.map((f,i)=>`${i+1}. ${f.name}`).join('\n');
-  const idx=prompt('\u79FB\u52A8\u5230\u54EA\u4E2A\u6587\u4EF6\u5939\uFF1F(0=\u65E0)\n'+fs);
-  if(idx===null)return;
-  const folder=D.folders[parseInt(idx)-1];
-  D.prompts.forEach(p=>{if(selectedIds.has(p.id))p.folder=folder?folder.id:''});
-  saveD();exitBatch();render();toast('\u5DF2\u79FB\u52A8');
+  let html='<div class="as-title">移动到文件夹</div>';
+  html+='<div class="as-item" onclick="doBatchMove(null)"><span class="as-icon">📥</span>无（根目录）</div>';
+  D.folders.forEach(f=>{
+    html+='<div class="as-item" onclick="doBatchMove(\''+f.id+'\')"><span class="as-icon">'+(f.icon||'📁')+'</span>'+esc(f.name)+'</div>';
+  });
+  html+='<div class="as-cancel" onclick="closeAS()">取消</div>';
+  document.getElementById('asBody').innerHTML=html;
+  document.getElementById('asOvl').classList.add('open');
+}
+function doBatchMove(folderId){
+  D.prompts.forEach(p=>{if(selectedIds.has(p.id))p.folder=folderId||''});
+  saveD();closeAS();exitBatch();render();toast('已移动');
 }
 function batchExport(){
   const items=D.prompts.filter(p=>selectedIds.has(p.id));
@@ -716,15 +736,14 @@ document.addEventListener('keydown',e=>{
   }
 });
 
-// Long press for batch mode
+// Long press for action sheet
 let longPressTimer=null;
 document.addEventListener('touchstart',e=>{
   const card=e.target.closest('.card');
   if(!card)return;
   longPressTimer=setTimeout(()=>{
     const id=card.dataset.id;if(id){
-      batchMode=true;selectedIds.add(id);
-      document.getElementById('batchBar').style.display='flex';updateBatch();render();
+      openAS(id);
       if(navigator.vibrate)navigator.vibrate(50);
     }
   },600);
@@ -800,7 +819,7 @@ function togglePinFromAS(id) {
 function batchFromAS(id) {
   closeAS();
   batchMode = true; selectedIds.add(id);
-  document.getElementById('batchBar').style.display = 'flex';
+  document.getElementById('batchBar').classList.add('open');
   updateBatch(); render();
 }
 function delFromAS(id) {
