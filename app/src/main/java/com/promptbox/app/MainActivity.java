@@ -46,38 +46,24 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                int sb = resDimen("status_bar_height");
+                // fitsSystemWindows=true 已经处理了顶部间距
+                // 只需要处理导航栏底部补偿
                 int nb = resDimen("navigation_bar_height");
-                // 注入 CSS safe-area 修复 + 调试面板
                 String js = "(function(){" +
-                    // CSS fix
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:max(12px," + sb + "px) !important}" +
-                    ".search{top:max(0px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
-                    // Debug overlay
+                    // Debug
                     "var d=document.createElement('div');" +
-                    "d.id='debug-overlay';" +
                     "d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,.85);color:#0f0;font:12px/1.5 monospace;padding:8px 12px;white-space:pre-wrap;';" +
                     "var hdr=document.querySelector('.hdr');" +
-                    "var hRect=hdr?hdr.getBoundingClientRect():null;" +
-                    "var sRect=document.querySelector('.search')?document.querySelector('.search').getBoundingClientRect():null;" +
-                    "d.textContent='DEBUG\\n'" +
-                    "  +'statusBarH(real):'+(" + sb + ")+'px\\n'" +
-                    "  +'navBarH:'+(" + nb + ")+'px\\n'" +
-                    "  +'vh:'+window.innerHeight+'px\\n'" +
-                    "  +'dvh:'+getComputedStyle(document.documentElement).getPropertyValue('--sai-top')+'\\n'" +
-                    "  +'hdr.top:'+(hRect?hRect.top:'?')+'px\\n'" +
-                    "  +'hdr.height:'+(hRect?hRect.height:'?')+'px\\n'" +
-                    "  +'hdr.padTop:'+(hdr?getComputedStyle(hdr).paddingTop:'?')+'\\n'" +
-                    "  +'search.top:'+(sRect?sRect.top:'?')+'px\\n'" +
-                    "  +'app.top:'+(document.querySelector('.app')?document.querySelector('.app').getBoundingClientRect().top:'?')+'px';" +
+                    "var hR=hdr?hdr.getBoundingClientRect():null;" +
+                    "d.textContent='DBG: vh='+window.innerHeight+' sb=' + (" + resDimen("status_bar_height") + ") + ' nb=' + (" + nb + ") + ' hdr.top=' + (hR?hR.top:'?') + ' hdr.pad=' + (hdr?getComputedStyle(hdr).paddingTop:'?');" +
                     "document.body.appendChild(d);" +
                     "})()";
                 view.evaluateJavascript(js, null);
@@ -103,25 +89,25 @@ public class MainActivity extends Activity {
         webView.loadUrl("file:///android_asset/index.html");
     }
 
-    private int resDimen(String name) {
-        int id = getResources().getIdentifier(name, "dimen", "android");
-        return id > 0 ? getResources().getDimensionPixelSize(id) : 0;
-    }
-
     @Override
     protected void onResume() {
         super.onResume();
-        // 每次回到前台时设置状态栏样式
-        Window window = getWindow();
-        window.setStatusBarColor(Color.parseColor("#F2F2F7"));
-        window.setNavigationBarColor(Color.TRANSPARENT);
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        View decor = window.getDecorView();
-        int flags = decor.getSystemUiVisibility();
+        Window w = getWindow();
+        // 状态栏 = 浅灰色（匹配 app 背景 #F2F2F7）+ 深色图标
+        w.setStatusBarColor(Color.parseColor("#F2F2F7"));
+        w.setNavigationBarColor(Color.TRANSPARENT);
+        w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        View dv = w.getDecorView();
+        int flags = dv.getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR; // 深色图标
+            flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
         }
-        decor.setSystemUiVisibility(flags);
+        dv.setSystemUiVisibility(flags);
+    }
+
+    private int resDimen(String name) {
+        int id = getResources().getIdentifier(name, "dimen", "android");
+        return id > 0 ? getResources().getDimensionPixelSize(id) : 0;
     }
 
     @Override
