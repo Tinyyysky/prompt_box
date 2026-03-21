@@ -29,8 +29,8 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .tag-filter-bar{padding:4px 12px;display:flex;gap:6px;flex-wrap:wrap;overflow:hidden;transition:max-height .3s;max-height:0}.tag-filter-bar.show{max-height:60px;padding:6px 12px}
 .tf-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff;animation:ci .2s}.tf-chip button{font-size:10px;opacity:.7;margin-left:2px}
 .trash-b{background:rgba(255,59,48,.08);color:var(--danger);padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}.trash-b button{background:var(--danger);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
-.batch-bar{position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:520px;margin:0 auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.32,.72,0,1);padding:0 10px 10px}.batch-bar.open{transform:translateY(0)}
-@keyframes batchIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.batch-bar{position:fixed;bottom:0;left:0;right:0;z-index:500;max-width:520px;margin:0 auto;display:none;padding:0 10px 10px;animation:batchIn .3s cubic-bezier(.32,.72,0,1)}.batch-bar.open{display:block}
+@keyframes batchIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 .batch-bar .batch-body{background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;overflow:hidden;border:.5px solid var(--border)}.batch-bar .batch-hd{padding:14px 16px 6px;text-align:center;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.3px}.batch-bar .batch-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:.5px solid var(--border)}.batch-bar .batch-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 8px;font-size:12px;font-weight:500;color:var(--text);cursor:pointer;transition:background .15s;border-right:.5px solid var(--border)}.batch-bar .batch-item:nth-child(4n){border-right:none}.batch-bar .batch-item:active{background:var(--bg3)}.batch-bar .batch-item .bi-icon{font-size:24px}.batch-bar .batch-item.danger{color:var(--danger)}.batch-bar .batch-cancel{margin-top:8px;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);border-radius:16px;border:.5px solid var(--border);padding:14px;text-align:center;font-size:16px;font-weight:600;cursor:pointer;transition:background .15s}.batch-bar .batch-cancel:active{background:var(--bg3)}
 .cards{padding:4px 12px 100px}.cards.g1{display:flex;flex-direction:column;gap:10px}.cards.g2{columns:2;column-gap:10px}.cards.g2 .card{break-inside:avoid;margin-bottom:10px;display:inline-block;width:100%}@media(max-width:380px){.cards.g2{columns:1}}
 .card{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:transform .22s cubic-bezier(.32,.72,0,1),box-shadow .22s;border-left:4px solid transparent;position:relative}.card:active{transform:scale(.97)}.card:hover{box-shadow:var(--shadow-hover)}
@@ -381,14 +381,44 @@ function setFolder(id){curF=id;selectedIds.clear();batchMode=false;document.getE
   toggleSB();render();
 }
 function newFolder(){
-  const name=prompt('文件夹名称');if(!name)return;
-  const color=FCOLORS[D.folders.length%FCOLORS.length];
-  D.folders.push({id:gfid(),name,color});saveD();render();
+  let html='<div class="as-title">新建文件夹</div>';
+  html+='<div style="padding:12px 16px"><input id="newFolderInput" type="text" placeholder="文件夹名称" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:15px;color:var(--text);outline:none;box-sizing:border-box"></div>';
+  html+='<div style="padding:0 16px 8px;font-size:12px;color:var(--text2)">选择颜色</div>';
+  html+='<div style="padding:0 16px 12px;display:flex;gap:10px" id="nfColors">';
+  FCOLORS.forEach((c,i)=>{
+    html+='<div onclick="pickFolderColor(\''+c+'\')" style="width:32px;height:32px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid '+(i===0?'var(--primary)':'transparent')+';transition:border .15s" class="nf-c" data-color="'+c+'"></div>';
+  });
+  html+='</div>';
+  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doNewFolder()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">创建</button></div>';
+  document.getElementById('asBody').innerHTML=html;
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
+  setTimeout(()=>{const inp=document.getElementById('newFolderInput');if(inp)inp.focus()},100);
+}
+window._nfColor=FCOLORS[0]||'#007AFF';
+function pickFolderColor(c){
+  window._nfColor=c;
+  document.querySelectorAll('.nf-c').forEach(el=>{
+    el.style.borderColor=el.dataset.color===c?'var(--primary)':'transparent';
+  });
+}
+function doNewFolder(){
+  const name=document.getElementById('newFolderInput')?.value?.trim();
+  if(!name){closeAS();return}
+  D.folders.push({id:gfid(),name,color:window._nfColor||FCOLORS[0]});saveD();closeAS();render();toast('已创建');
 }
 function delFolder(id){
-  if(!confirm('删除此文件夹？'))return;
+  const f=D.folders.find(x=>x.id===id);if(!f)return;
+  let html='<div class="as-title">确认删除</div>';
+  html+='<div style="padding:16px;text-align:center;font-size:15px;color:var(--text)">确定删除文件夹「<b>'+esc(f.name)+'</b>」？<br><span style="font-size:13px;color:var(--text2)">文件夹内的提示词将移至根目录</span></div>';
+  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doDelFolder(\''+id+'\')" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
+  document.getElementById('asBody').innerHTML=html;
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
+}
+function doDelFolder(id){
   D.folders=D.folders.filter(f=>f.id!==id);D.prompts.forEach(p=>{if(p.folder===id)p.folder=''});
-  if(curF===id)curF=null;saveD();render();toast('已删除');
+  if(curF===id)curF=null;saveD();closeAS();render();toast('已删除');
 }
 
 // ===== MODAL =====
@@ -600,7 +630,8 @@ function batchTag(){
   if(allTags.length){html+='<div style="padding:0 16px 8px;font-size:12px;color:var(--text2)">已有标签</div><div style="padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px">'+allTags.map(t=>'<span class="tag-chip" onclick="document.getElementById(\'batchTagInput\').value=\''+esc(t)+'\'" style="cursor:pointer">'+esc(t)+'</span>').join('')+'</div>';}
   html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doBatchTag()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
   document.getElementById('asBody').innerHTML=html;
-  document.getElementById('asOvl').classList.add('open');
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
   setTimeout(()=>{const inp=document.getElementById('batchTagInput');if(inp)inp.focus()},100);
 }
 function doBatchTag(){
@@ -616,7 +647,8 @@ function batchMove(){
   });
   html+='<div class="as-cancel" onclick="closeAS()">取消</div>';
   document.getElementById('asBody').innerHTML=html;
-  document.getElementById('asOvl').classList.add('open');
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
 }
 function doBatchMove(folderId){
   D.prompts.forEach(p=>{if(selectedIds.has(p.id))p.folder=folderId||''});
@@ -629,9 +661,16 @@ function batchExport(){
   exitBatch();toast('\u5DF2\u5BFC\u51FA');
 }
 function batchDel(){
-  if(!confirm('\u5220\u9664\u9009\u4E2D\u7684 '+selectedIds.size+' \u4E2A\u63D0\u793A\u8BCD\uFF1F'))return;
+  let html='<div class="as-title">确认删除</div>';
+  html+='<div style="padding:16px;text-align:center;font-size:15px;color:var(--text)">确定删除选中的 <b>'+selectedIds.size+'</b> 个提示词？<br><span style="font-size:13px;color:var(--text2)">将移至回收站</span></div>';
+  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doBatchDel()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
+  document.getElementById('asBody').innerHTML=html;
+  document.getElementById('asOL').classList.add('open');
+  document.getElementById('as').classList.add('open');
+}
+function doBatchDel(){
   D.prompts.forEach(p=>{if(selectedIds.has(p.id))p.deleted=true});
-  saveD();exitBatch();render();toast('\u5DF2\u79FB\u81F3\u56DE\u6536\u7AD9');
+  saveD();closeAS();exitBatch();render();toast('已移至回收站');
 }
 
 // Drag & Drop
