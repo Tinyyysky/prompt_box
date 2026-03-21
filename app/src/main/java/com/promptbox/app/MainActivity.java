@@ -46,14 +46,11 @@ public class MainActivity extends Activity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                // Android WebView 不支持 env(safe-area-inset-*)
-                // 用 getStatusBarHeight 计算正确值
                 int sb = resDimen("status_bar_height");
                 int nb = resDimen("navigation_bar_height");
+                // 注入 CSS safe-area 修复 + 调试面板
                 String js = "(function(){" +
-                    "var r=document.documentElement;" +
-                    "r.style.setProperty('--sai-top','" + sb + "px');" +
-                    "r.style.setProperty('--sai-bottom','" + nb + "px');" +
+                    // CSS fix
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
                     ".hdr{padding-top:max(12px," + sb + "px) !important}" +
@@ -64,6 +61,24 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
+                    // Debug overlay
+                    "var d=document.createElement('div');" +
+                    "d.id='debug-overlay';" +
+                    "d.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(0,0,0,.85);color:#0f0;font:12px/1.5 monospace;padding:8px 12px;white-space:pre-wrap;';" +
+                    "var hdr=document.querySelector('.hdr');" +
+                    "var hRect=hdr?hdr.getBoundingClientRect():null;" +
+                    "var sRect=document.querySelector('.search')?document.querySelector('.search').getBoundingClientRect():null;" +
+                    "d.textContent='DEBUG\\n'" +
+                    "  +'statusBarH(real):'+(" + sb + ")+'px\\n'" +
+                    "  +'navBarH:'+(" + nb + ")+'px\\n'" +
+                    "  +'vh:'+window.innerHeight+'px\\n'" +
+                    "  +'dvh:'+getComputedStyle(document.documentElement).getPropertyValue('--sai-top')+'\\n'" +
+                    "  +'hdr.top:'+(hRect?hRect.top:'?')+'px\\n'" +
+                    "  +'hdr.height:'+(hRect?hRect.height:'?')+'px\\n'" +
+                    "  +'hdr.padTop:'+(hdr?getComputedStyle(hdr).paddingTop:'?')+'\\n'" +
+                    "  +'search.top:'+(sRect?sRect.top:'?')+'px\\n'" +
+                    "  +'app.top:'+(document.querySelector('.app')?document.querySelector('.app').getBoundingClientRect().top:'?')+'px';" +
+                    "document.body.appendChild(d);" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
