@@ -3,6 +3,7 @@ package com.promptbox.app;
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
@@ -10,6 +11,9 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.provider.MediaStore;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -21,6 +25,9 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 
 public class MainActivity extends Activity {
@@ -83,6 +90,7 @@ public class MainActivity extends Activity {
         });
 
         webView.addJavascriptInterface(new ClipboardBridge(this), "AndroidClipboard");
+        webView.addJavascriptInterface(new ShareBridge(this), "AndroidShare");
         webView.loadUrl("file:///android_asset/index.html");
 
         applySystemBars();
@@ -98,7 +106,6 @@ public class MainActivity extends Activity {
         Window w = getWindow();
         boolean dark = isDarkMode();
 
-        // 固体色状态栏
         if (dark) {
             w.setStatusBarColor(Color.parseColor("#1C1C1E"));
         } else {
@@ -108,7 +115,6 @@ public class MainActivity extends Activity {
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
-        // 标准 Android API
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -127,12 +133,10 @@ public class MainActivity extends Activity {
         }
         dv.setSystemUiVisibility(flags);
 
-        // 小米 MIUI/HyperOS 私有 API
         applyMiuiDarkMode(dark);
     }
 
     private void applyMiuiDarkMode(boolean dark) {
-        // 小米 Window 有 setStatusBarDarkMode(boolean) 方法
         try {
             Method method = Window.class.getMethod("setStatusBarDarkMode", boolean.class);
             method.invoke(getWindow(), dark);
@@ -182,6 +186,79 @@ public class MainActivity extends Activity {
             ClipboardManager cm = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
             cm.setPrimaryClip(ClipData.newPlainText("prompt", text));
             ((Activity) ctx).runOnUiThread(() -> Toast.makeText(ctx, "\u5DF2\u590D\u5236", Toast.LENGTH_SHORT).show());
+        }
+    }
+
+    class ShareBridge {
+        private Activity activity;
+        private Uri lastSavedUri;
+
+        ShareBridge(Activity a) { activity = a; }
+
+        @JavascriptInterface
+        public String saveBase64Png(String base64, String filename) {
+            // base64 is raw PNG data (no data: prefix)
+            byte[] data = Base64.decode(base64, Base64.DEFAULT);
+            OutputStream os = null;
+            Uri uri = null;
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    ContentValues cv = new ContentValues();
+                    cv.put(MediaStore.Images.Media.DISPLAY_NAME, filename);
+                    cv.put(MediaStore.Images.Media.MIME_TYPE, "image/png");
+                    cv.put(MediaStore.Images.Media.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/PromptBox");
+                    uri = activity.getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, cv);
+                    if (uri == null) return "";
+                    os = activity.getContentResolver().openOutputStream(uri);
+                } else {
+                    File dir = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), "PromptBox");
+                    if (!dir.exists()) dir.mkdirs();
+                    File file = new File(dir, filename);
+                    os = new FileOutputStream(file);
+                    uri = Uri.fromFile(file);
+                }
+                os.write(data);
+                os.flush();
+                lastSavedUri = uri;
+                return uri.toString();
+            } catch (Exception e) {
+                Log.e(TAG, "saveBase64Png failed", e);
+                return "";
+            } finally {
+                if (os != null) try { os.close(); } catch (Exception e) {}
+            }
+        }
+
+        @JavascriptInterface
+        public void shareImage(String base64, String title) {
+            byte[] data = Base64.decode(base64, Base64.DEFAULT);
+            File cacheDir = activity.getCacheDir();
+            File shareDir = new File(cacheDir, "share");
+            if (!shareDir.exists()) shareDir.mkdirs();
+            File file = new File(shareDir, "share_image.png");
+            try {
+                FileOutputStream fos = new FileOutputStream(file);
+                fos.write(data);
+                fos.flush();
+                fos.close();
+                Uri fileUri = androidx.core.content.FileProvider.getUriForFile(
+                    activity,
+                    activity.getPackageName() + ".fileprovider",
+                    file
+                );
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("image/png");
+                intent.putExtra(Intent.EXTRA_STREAM, fileUri);
+                intent.putExtra(Intent.EXTRA_SUBJECT, title);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                activity.runOnUiThread(() -> {
+                    activity.startActivity(Intent.createChooser(intent, "分享到"));
+                });
+            } catch (Exception e) {
+                Log.e(TAG, "shareImage failed", e);
+                activity.runOnUiThread(() -> Toast.makeText(activity, "分享失败", Toast.LENGTH_SHORT).show());
+            }
         }
     }
 }
