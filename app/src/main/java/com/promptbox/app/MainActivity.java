@@ -91,6 +91,7 @@ public class MainActivity extends Activity {
 
         webView.addJavascriptInterface(new ClipboardBridge(this), "AndroidClipboard");
         webView.addJavascriptInterface(new ShareBridge(this), "AndroidShare");
+        webView.addJavascriptInterface(new StatusBarBridge(this), "AndroidBridge");
         webView.loadUrl("file:///android_asset/index.html");
 
         applySystemBars();
@@ -175,6 +176,38 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         if (webView.canGoBack()) webView.goBack();
         else super.onBackPressed();
+    }
+
+    class StatusBarBridge {
+        private Activity activity;
+        StatusBarBridge(Activity a) { activity = a; }
+
+        @JavascriptInterface
+        public void setStatusBarColor(String color) {
+            activity.runOnUiThread(() -> {
+                try {
+                    Window w = activity.getWindow();
+                    w.setStatusBarColor(Color.parseColor(color));
+                    // Determine if dark based on luminance
+                    int c = Color.parseColor(color);
+                    double luminance = (0.299 * Color.red(c) + 0.587 * Color.green(c) + 0.114 * Color.blue(c)) / 255;
+                    boolean darkBg = luminance < 0.5;
+                    View dv = w.getDecorView();
+                    int flags = dv.getSystemUiVisibility();
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        if (darkBg) flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                        else flags |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+                    }
+                    dv.setSystemUiVisibility(flags);
+                    try {
+                        Method method = Window.class.getMethod("setStatusBarDarkMode", boolean.class);
+                        method.invoke(w, darkBg);
+                    } catch (Exception e) {}
+                } catch (Exception e) {
+                    Log.e(TAG, "setStatusBarColor failed", e);
+                }
+            });
+        }
     }
 
     class ClipboardBridge {
