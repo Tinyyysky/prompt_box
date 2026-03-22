@@ -62,8 +62,8 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:" + sb + "px !important}" +
-                    ".sb-hd{padding-top:" + sb + "px !important}" +
+                    ".hdr{padding-top:50px !important}" +
+                    ".sb-hd{padding-top:50px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
@@ -75,12 +75,12 @@ public class MainActivity extends Activity {
                     "var dark=document.body.classList.contains('dark');" +
                     "var bar=document.createElement('div');" +
                     "bar.id='_sbBar';" +
-                    "bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbH+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:9999;pointer-events:none';" +
+                    "var sbUse=50;bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbUse+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:9999;pointer-events:none';" +
                     "document.body.appendChild(bar);" +
                     "var dbg=document.createElement('div');" +
                     "dbg.id='_dbg';" +
-                    "dbg.style.cssText='position:fixed;top:'+(sbH+4)+'px;left:8px;z-index:9999;background:lime;color:#000;padding:4px 8px;font-size:11px;font-family:monospace;border-radius:6px;cursor:pointer';" +
-                    "dbg.textContent='SB:'+sbH+' NB:'+nbH+' top:'+(document.querySelector('.hdr').getBoundingClientRect().top|0)+'px';" +
+                    "dbg.style.cssText='position:fixed;top:'+(sbUse+4)+'px;left:8px;z-index:9999;background:lime;color:#000;padding:4px 8px;font-size:11px;font-family:monospace;border-radius:6px;cursor:pointer';" +
+                    "dbg.textContent='SB:'+sbH+'->'+sbUse+' NB:'+nbH+' top:'+(document.querySelector('.hdr').getBoundingClientRect().top|0)+'px';" +
                     "document.body.appendChild(dbg);" +
                     "var _p=0;var _v=[0,5,10,20,30,40,50,60,80,100,134];" +
                     "dbg.onclick=function(){_p=(_p+1)%_v.length;var h=document.querySelector('.hdr');h.style.paddingTop=_v[_p]+'px';dbg.textContent='pad:'+_v[_p]+' top:'+h.getBoundingClientRect().top|0+'px';};" +
