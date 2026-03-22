@@ -252,6 +252,7 @@ function saveDNow(){
 }
 // IndexedDB for large attachment data
 // Markdown render
+function esc(s){if(!s)return'';return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
 function mdRender(s){
   if(!s)return'';s=esc(s);
   s=s.replace(/```(\w*)\n([\s\S]*?)```/g,(m,l,c)=>'<pre><code>'+c.trim()+'</code></pre>');
