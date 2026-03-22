@@ -105,7 +105,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .hist-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg3);margin-bottom:6px;cursor:pointer;transition:all .15s}.hist-item:active{opacity:.6}.hist-item .h-title{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hist-item .h-time{font-size:11px;color:var(--text3)}.hist-item .h-cp{padding:5px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff}
 .stats{position:fixed;left:0;right:0;bottom:0;z-index:302;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);max-width:520px;margin:0 auto;max-height:85vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);border-top:.5px solid var(--border)}.stats.open{transform:translateY(0)}
 .stats-bd{flex:1;overflow-y:auto;padding:16px 20px}.stats-hd{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--border);flex-shrink:0}.stats-hd h3{font-size:18px;font-weight:700}.stats-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
-.tag-m-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);font-size:14px;transition:all .2s;cursor:pointer}.tag-m-chip:hover{border-color:var(--accent)}.tag-m-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tag-m-cnt{font-size:11px;color:var(--text2);background:var(--bg);border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}.tag-m-rn,.tag-m-del{background:none;border:none;font-size:12px;cursor:pointer;padding:2px;opacity:.5;transition:opacity .2s}.tag-m-rn:hover,.tag-m-del:hover{opacity:1}.tag-m-del:hover{color:#ff3b30}
+.tag-m-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer;flex:1;display:flex;align-items:center;gap:8px}.tag-m-cnt{font-size:11px;color:var(--text2);background:var(--bg3);border-radius:10px;padding:1px 7px;min-width:18px;text-align:center}.tag-m-act{background:none;border:none;font-size:14px;cursor:pointer;padding:6px;opacity:.5;transition:opacity .2s;border-radius:8px}.tag-m-act:hover{opacity:1;background:var(--bg3)}.tag-m-act:hover:last-child{color:#ff3b30}.tag-m-merge{padding:14px 18px;border-top:.5px solid var(--border)}.tag-m-merge-label{font-size:12px;color:var(--text2);margin-bottom:10px}.tag-m-merge-row{display:flex;gap:6px;align-items:center}.tag-m-sel{flex:1;padding:8px;border-radius:10px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px;outline:none}
 .stat-group{margin-bottom:20px}.stat-group h4{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.3px;text-transform:uppercase}
 .stat-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg3);margin-bottom:6px}
 .stat-rank{font-size:14px;font-weight:700;color:var(--primary);width:24px;text-align:center}.stat-title{flex:1;font-size:14px;font-weight:500}.stat-val{font-size:13px;color:var(--text2);font-weight:600}
@@ -203,9 +203,11 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
   <div class="stats-bd" id="panelBody"></div>
 </div>
 <div class="mbg" id="tagMBbg" onclick="closePanel('tagMBbg','tagMPanel')"></div>
-<div class="stats" id="tagMPanel">
-  <div class="stats-hd"><h3>&#127991; 标签管理</h3><button onclick="closePanel('tagMBbg','tagMPanel')">&#10005;</button></div>
-  <div class="stats-bd" id="tagMBody"></div>
+<div class="as" id="tagMPanel">
+  <div class="mopt-body">
+    <div class="mopt-item" style="justify-content:center;cursor:default;pointer-events:none"><span style="font-weight:700;font-size:17px">&#127991; 标签管理</span><button onclick="closePanel('tagMBbg','tagMPanel')" style="position:absolute;right:18px;background:var(--bg3);border:none;border-radius:50%;width:28px;height:28px;font-size:13px;cursor:pointer">\u00D7</button></div>
+    <div id="tagMBody"></div>
+  </div>
 </div>
 <div class="vm" id="vm"><div class="vm-b" id="vmB"></div></div>
 <div class="mbg" id="varBbg" onclick="closeVarModal(false)"></div>
@@ -261,8 +263,8 @@ function gid(){return 'p'+Math.random().toString(36).slice(2,10)+Date.now().toSt
 function gfid(){return 'f'+Math.random().toString(36).slice(2,10)}
 function fdate(ts){if(!ts)return'';const d=new Date(ts);const now=new Date();const pad=n=>String(n).padStart(2,'0');const time=pad(d.getHours())+':'+pad(d.getMinutes());if(d.toDateString()===now.toDateString())return'今天 '+time;const y=new Date(now-86400000);if(d.toDateString()===y.toDateString())return'昨天 '+time;return d.getMonth()+1+'/'+d.getDate()+' '+time}
 function toast(msg){const t=document.getElementById('_toast');if(!t){const el=document.createElement('div');el.id='_toast';el.className='toast';document.body.appendChild(el);el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);return}t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000)}
-function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:'auto',grid:1,themeColor:'#007AFF'},nid:1}}
-function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:'auto',grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
+function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:true,grid:1,themeColor:'#007AFF'},nid:1}}
+function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:true,grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
 let saveTimer;
 function saveD(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDNow(),300)}
 function saveDNow(){
@@ -1271,10 +1273,7 @@ function toggleGrid(){D.settings.grid=D.settings.grid===1?2:1;document.getElemen
 
 // Theme
 function toggleTheme(){
-  // Cycle: light → dark → auto
-  if(D.settings.darkMode==='auto'){D.settings.darkMode=false}
-  else if(D.settings.darkMode===true){D.settings.darkMode='auto'}
-  else{D.settings.darkMode=true}
+  D.settings.darkMode=D.settings.darkMode==='auto'?true:!D.settings.darkMode;
   applyTheme();saveD();
 }
 function applyTheme(){
@@ -1282,12 +1281,12 @@ function applyTheme(){
   document.documentElement.dataset.theme=isDark?'dark':'';
   const btn=document.getElementById('themeBtn');
   btn.textContent=isDark?'\u2600':'\u25D1';
-  btn.title=D.settings.darkMode==='auto'?'跟随系统':isDark?'浅色':'深色';
 }
 
 // Tag Management
 function openTagManager(){
   toggleSB();
+  document.getElementById('tagMBody').innerHTML='';
   document.getElementById('tagMBbg').classList.add('open');
   document.getElementById('tagMPanel').classList.add('open');
   renderTagManager();
@@ -1299,24 +1298,17 @@ function renderTagManager(){
   D.prompts.filter(p=>!p.deleted).forEach(p=>(p.tags||[]).forEach(t=>{tagMap[t]=(tagMap[t]||0)+1}));
   const entries=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]);
   if(!entries.length){
-    body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2);opacity:.6"><div style="font-size:48px;margin-bottom:12px">🏷️</div><p>还没有标签</p><p style="font-size:13px;margin-top:8px">编辑提示词时可以添加标签</p></div>';
+    body.innerHTML='<div style="text-align:center;padding:30px 20px;color:var(--text2);opacity:.6"><div style="font-size:36px;margin-bottom:8px">🏷️</div><p style="font-size:14px">还没有标签</p><p style="font-size:12px;margin-top:4px">编辑提示词时可以添加标签</p></div>';
     return;
   }
-  let html='<div style="margin-bottom:16px;font-size:13px;color:var(--text2)">共 '+entries.length+' 个标签，点击可筛选，长按可操作</div>';
-  html+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  // Tag list
   entries.forEach(([tag,cnt])=>{
-    html+=`<div class="tag-m-chip" onclick="closePanel('tagMBbg','tagMPanel');filterByTag('${esc(tag)}')"><span class="tag-m-name">${esc(tag)}</span><span class="tag-m-cnt">${cnt}</span><button class="tag-m-rn" onclick="event.stopPropagation();renameTag('${esc(tag)}')" title="重命名">✏️</button><button class="tag-m-del" onclick="event.stopPropagation();deleteTag('${esc(tag)}')" title="删除">✕</button></div>`;
+    body.innerHTML+=`<div class="mopt-item tag-m-row" style="border-top:.5px solid var(--border)"><span class="tag-m-name" style="flex:1;font-size:15px" onclick="closePanel('tagMBbg','tagMPanel');filterByTag('${esc(tag)}')">${esc(tag)}<span class="tag-m-cnt">${cnt}</span></span><button class="tag-m-act" onclick="event.stopPropagation();renameTag('${esc(tag)}')" title="重命名">✏️</button><button class="tag-m-act" onclick="event.stopPropagation();deleteTag('${esc(tag)}')" title="删除">✕</button></div>`;
   });
-  html+='</div>';
-  // Merge tags
+  // Merge section
   if(entries.length>=2){
-    html+='<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:13px;color:var(--text2);margin-bottom:8px">合并标签</div><div style="display:flex;gap:8px;align-items:center"><select id="mergeFrom" style="flex:1;padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px">';
-    entries.forEach(([t])=>{html+=`<option value="${esc(t)}">${esc(t)}</option>`});
-    html+='</select><span style="color:var(--text2)">→</span><select id="mergeTo" style="flex:1;padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px">';
-    entries.forEach(([t])=>{html+=`<option value="${esc(t)}">${esc(t)}</option>`});
-    html+='</select><button class="bp" style="padding:8px 14px;font-size:13px" onclick="mergeTags()">合并</button></div></div>';
+    body.innerHTML+=`<div class="tag-m-merge"><div class="tag-m-merge-label">合并标签</div><div class="tag-m-merge-row"><select id="mergeFrom" class="tag-m-sel">`+entries.map(([t])=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')+`</select><span style="color:var(--text2);margin:0 4px">→</span><select id="mergeTo" class="tag-m-sel">`+entries.map(([t])=>`<option value="${esc(t)}">${esc(t)}</option>`).join('')+`</select><button class="bp" style="padding:8px 14px;font-size:13px;border-radius:10px" onclick="mergeTags()">合并</button></div></div>`;
   }
-  body.innerHTML=html;
 }
 function renameTag(oldName){
   const newName=prompt('重命名标签 "'+oldName+'" 为：',oldName);
@@ -1551,8 +1543,10 @@ function removeTagFromAS(id, idx) {
 
 // ===== MORE OPTIONS MODAL =====
 function openMopt() {
+  const sysLabel=D.settings.darkMode==='auto'?'✓ 跟随系统':'跟随系统';
   document.getElementById('moptBody').innerHTML = `
     <div class="mopt-item" onclick="openHistory();closeMopt()"><span class="mopt-icon">📋</span>复制历史</div>
+    <div class="mopt-item" onclick="toggleThemeAuto();closeMopt()"><span class="mopt-icon">🌗</span>${sysLabel}</div>
     <div class="mopt-item" onclick="openThemePicker();closeMopt()"><span class="mopt-icon">🎨</span>主题色</div>
     <div class="mopt-item" onclick="exportD();closeMopt()"><span class="mopt-icon">💾</span>导出备份</div>
     <div class="mopt-item" onclick="importD();closeMopt()"><span class="mopt-icon">📥</span>导入数据</div>
@@ -1563,6 +1557,10 @@ function openMopt() {
     </div>`;
   document.getElementById('moptOL').classList.add('open');
   document.getElementById('mopt').classList.add('open');
+}
+function toggleThemeAuto(){
+  D.settings.darkMode=D.settings.darkMode==='auto'?!window.matchMedia('(prefers-color-scheme:dark)').matches:'auto';
+  applyTheme();saveD();toast(D.settings.darkMode==='auto'?'已跟随系统主题':'已取消跟随系统');
 }
 function closeMopt() {
   document.getElementById('moptOL').classList.remove('open');
