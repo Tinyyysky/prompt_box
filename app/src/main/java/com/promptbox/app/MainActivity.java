@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
+                    ".hdr{padding-top:max(50px," + sb + "px) !important}" +
                     ".sb-hd{padding-top:max(50px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
