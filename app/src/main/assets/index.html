@@ -237,6 +237,11 @@ const TPLS=[
 let D=loadD(),curF=null,editId=null,editTags=[],pendingFiles=[],pendingKeep=[],selectedIds=new Set(),batchMode=false;
 
 let activeTagFilters=[],mdMode='edit',dragSrcId=null;
+// Utility functions (must be defined before any usage)
+function gid(){return 'p'+Math.random().toString(36).slice(2,10)+Date.now().toString(36)}
+function gfid(){return 'f'+Math.random().toString(36).slice(2,10)}
+function fdate(ts){if(!ts)return'';const d=new Date(ts);const now=new Date();const pad=n=>String(n).padStart(2,'0');const time=pad(d.getHours())+':'+pad(d.getMinutes());if(d.toDateString()===now.toDateString())return'今天 '+time;const y=new Date(now-86400000);if(d.toDateString()===y.toDateString())return'昨天 '+time;return d.getMonth()+1+'/'+d.getDate()+' '+time}
+function toast(msg){const t=document.getElementById('_toast');if(!t){const el=document.createElement('div');el.id='_toast';el.className='toast';document.body.appendChild(el);el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);return}t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000)}
 function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
 function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:false,grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
 let saveTimer;
