@@ -25,7 +25,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .search-w{flex:1;position:relative;display:flex;align-items:center}.search-w input{background:var(--bg3);border:none;border-radius:var(--radius);padding:9px 34px 9px 34px;font-size:15px}
 .search-w::before{content:"\1F50D";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.4;pointer-events:none}
 .search-clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--text3);color:var(--bg);font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;opacity:.6}.search-clr.show{display:flex}
-.search-act{display:flex;gap:5px}.pill{background:var(--bg3);border:none;border-radius:var(--radius-xs);padding:8px 10px;font-size:14px;color:var(--text2);transition:all .15s;min-width:38px;text-align:center}.pill:active{transform:scale(.88)}
+.search-act{display:flex;gap:5px}.pill{background:var(--bg3);border:none;border-radius:var(--radius-xs);padding:8px 10px;font-size:14px;color:var(--text2);transition:all .15s;min-width:38px;text-align:center}.pill:active{transform:scale(.88)}.search-scope{position:absolute;right:30px;top:50%;transform:translateY(-50%);z-index:1;padding:4px 6px;min-width:auto;background:transparent;font-size:13px}
 .tag-filter-bar{padding:4px 12px;display:flex;gap:6px;flex-wrap:wrap;overflow:hidden;transition:max-height .3s;max-height:0}.tag-filter-bar.show{max-height:60px;padding:6px 12px}
 .tf-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff;animation:ci .2s}.tf-chip button{font-size:10px;opacity:.7;margin-left:2px}
 .trash-b{background:rgba(255,59,48,.08);color:var(--danger);padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}.trash-b button{background:var(--danger);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
@@ -105,6 +105,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .hist-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg3);margin-bottom:6px;cursor:pointer;transition:all .15s}.hist-item:active{opacity:.6}.hist-item .h-title{flex:1;font-size:14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.hist-item .h-time{font-size:11px;color:var(--text3)}.hist-item .h-cp{padding:5px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff}
 .stats{position:fixed;left:0;right:0;bottom:0;z-index:302;background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);max-width:520px;margin:0 auto;max-height:85vh;border-radius:16px 16px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .38s cubic-bezier(.32,.72,0,1);border-top:.5px solid var(--border)}.stats.open{transform:translateY(0)}
 .stats-bd{flex:1;overflow-y:auto;padding:16px 20px}.stats-hd{padding:16px;display:flex;align-items:center;justify-content:space-between;border-bottom:.5px solid var(--border);flex-shrink:0}.stats-hd h3{font-size:18px;font-weight:700}.stats-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
+.tag-m-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:20px;background:var(--bg3);border:1px solid var(--border);font-size:14px;transition:all .2s;cursor:pointer}.tag-m-chip:hover{border-color:var(--accent)}.tag-m-name{max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tag-m-cnt{font-size:11px;color:var(--text2);background:var(--bg);border-radius:10px;padding:1px 6px;min-width:18px;text-align:center}.tag-m-rn,.tag-m-del{background:none;border:none;font-size:12px;cursor:pointer;padding:2px;opacity:.5;transition:opacity .2s}.tag-m-rn:hover,.tag-m-del:hover{opacity:1}.tag-m-del:hover{color:#ff3b30}
 .stat-group{margin-bottom:20px}.stat-group h4{font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;letter-spacing:.3px;text-transform:uppercase}
 .stat-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);background:var(--bg3);margin-bottom:6px}
 .stat-rank{font-size:14px;font-weight:700;color:var(--primary);width:24px;text-align:center}.stat-title{flex:1;font-size:14px;font-weight:500}.stat-val{font-size:13px;color:var(--text2);font-weight:600}
@@ -145,7 +146,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 <div class="hdr" id="hdr"><button class="hdr-btn" onclick="toggleSB()">&#9776;</button><h1 id="hdrT">提示词盒子</h1><button class="hdr-btn" onclick="toggleTheme()" id="themeBtn">&#9780;</button></div>
 <div class="content" id="content">
 <div class="search" id="searchBar">
-  <div class="search-w"><input type="text" id="searchIn" placeholder="搜索标题、内容、标签\u2026" oninput="onSearch()"><div class="search-clr" id="searchClr" onclick="clearSearch()">&#10005;</div></div>
+  <div class="search-w"><input type="text" id="searchIn" placeholder="搜索标题、内容、标签\u2026" oninput="onSearch()"><div class="search-clr" id="searchClr" onclick="clearSearch()">&#10005;</div><button class="pill search-scope" id="searchScopeBtn" onclick="cycleSearchScope()">&#128270;</button></div>
   <div class="search-act"><button class="pill" onclick="cycleSort()" id="sortBtn">&#128338;</button><button class="pill" onclick="toggleGrid()" id="gridBtn">&#9636;</button></div>
 </div>
 <div class="tag-filter-bar" id="tagFilterBar"></div>
@@ -175,6 +176,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
   <div class="sb-act">
     <button class="sb-btn p" onclick="newFolder()">+ 新建文件夹</button>
     <button class="sb-btn g" onclick="openStats()">&#128202; 统计面板</button>
+    <button class="sb-btn g" onclick="openTagManager()">&#127991; 标签管理</button>
     <button class="sb-btn g" onclick="openTrash()">&#128465; 回收站</button>
     <button class="sb-btn g" onclick="openMopt()">&#128295; 更多选项</button>
   </div>
@@ -199,6 +201,11 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 <div class="stats" id="statsPanel">
   <div class="stats-hd"><h3 id="panelTitle">&#128202; 统计面板</h3><button onclick="closePanel('statsBbg','statsPanel')">&#10005;</button></div>
   <div class="stats-bd" id="panelBody"></div>
+</div>
+<div class="mbg" id="tagMBbg" onclick="closePanel('tagMBbg','tagMPanel')"></div>
+<div class="stats" id="tagMPanel">
+  <div class="stats-hd"><h3>&#127991; 标签管理</h3><button onclick="closePanel('tagMBbg','tagMPanel')">&#10005;</button></div>
+  <div class="stats-bd" id="tagMBody"></div>
 </div>
 <div class="vm" id="vm"><div class="vm-b" id="vmB"></div></div>
 <div class="mbg" id="varBbg" onclick="closeVarModal(false)"></div>
@@ -254,8 +261,8 @@ function gid(){return 'p'+Math.random().toString(36).slice(2,10)+Date.now().toSt
 function gfid(){return 'f'+Math.random().toString(36).slice(2,10)}
 function fdate(ts){if(!ts)return'';const d=new Date(ts);const now=new Date();const pad=n=>String(n).padStart(2,'0');const time=pad(d.getHours())+':'+pad(d.getMinutes());if(d.toDateString()===now.toDateString())return'今天 '+time;const y=new Date(now-86400000);if(d.toDateString()===y.toDateString())return'昨天 '+time;return d.getMonth()+1+'/'+d.getDate()+' '+time}
 function toast(msg){const t=document.getElementById('_toast');if(!t){const el=document.createElement('div');el.id='_toast';el.className='toast';document.body.appendChild(el);el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000);return}t.textContent=msg;t.classList.add('show');clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove('show'),2000)}
-function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
-function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:false,grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
+function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:'auto',grid:1,themeColor:'#007AFF'},nid:1}}
+function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:'auto',grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
 let saveTimer;
 function saveD(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDNow(),300)}
 function saveDNow(){
@@ -349,7 +356,22 @@ function render(){
   }
   // Search
   const q=document.getElementById('searchIn').value.trim().toLowerCase();
-  if(q)list=list.filter(p=>p.title.toLowerCase().includes(q)||p.content.toLowerCase().includes(q)||(p.tags||[]).some(t=>t.toLowerCase().includes(q)));
+  if(q){
+    const scope=getSearchScope();
+    list=list.filter(p=>{
+      if(scope==='title')return p.title.toLowerCase().includes(q);
+      if(scope==='content')return p.content.toLowerCase().includes(q);
+      if(scope==='tag')return(p.tags||[]).some(t=>t.toLowerCase().includes(q));
+      if(scope==='example')return(p.example||'').toLowerCase().includes(q);
+      // 'all' scope
+      return p.title.toLowerCase().includes(q)||p.content.toLowerCase().includes(q)||(p.tags||[]).some(t=>t.toLowerCase().includes(q))||(p.example||'').toLowerCase().includes(q);
+    });
+  }
+  // Special scopes without keyword
+  const scope=getSearchScope();
+  if(!q&&scope==='with_img'){
+    list=list.filter(p=>(p.attachments||[]).some(a=>a.type==='image'));
+  }
   // Tag filter
   if(activeTagFilters.length>0){
     list=list.filter(p=>activeTagFilters.every(ft=>(p.tags||[]).includes(ft)));
@@ -1234,19 +1256,96 @@ function onSearch(){
 }
 function clearSearch(){document.getElementById('searchIn').value='';document.getElementById('searchClr').classList.remove('show');render()}
 
+// Search scope filter
+const searchScopes=[{key:'all',label:'全部',icon:'🔍'},{key:'title',label:'标题',icon:'📝'},{key:'content',label:'内容',icon:'📄'},{key:'tag',label:'标签',icon:'🏷️'},{key:'example',label:'示例',icon:'💡'},{key:'with_img',label:'有图片',icon:'🖼️'}];
+let searchScopeIdx=0;
+function cycleSearchScope(){searchScopeIdx=(searchScopeIdx+1)%searchScopes.length;const s=searchScopes[searchScopeIdx];document.getElementById('searchScopeBtn').textContent=s.icon;showKbd(s.label);render()}
+function getSearchScope(){return searchScopes[searchScopeIdx].key}
+
 // Sort
 const sorts=['time_desc','time_asc','name_asc','name_desc','use_desc','custom'];
 const sortNames={'time_desc':'\u65F6\u95F4\u2193','time_asc':'\u65F6\u95F4\u2191','name_asc':'\u540D\u79F0A\u2192Z','name_desc':'\u540D\u79F0Z\u2192A','use_desc':'\u6700\u5E38\u7528','custom':'\u81EA\u5B9A\u4E49'};
 function cycleSort(){const i=sorts.indexOf(D.settings.sort||'time_desc');D.settings.sort=sorts[(i+1)%sorts.length];document.getElementById('sortBtn').textContent='\uD83D\uDD52';showKbd(sortNames[D.settings.sort]);saveD();render()}
+function showKbd(msg){const el=document.getElementById('kbdHint');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),800)}
 function toggleGrid(){D.settings.grid=D.settings.grid===1?2:1;document.getElementById('gridBtn').textContent=D.settings.grid===1?'\u25A4':'\u25A3';saveD();render()}
 
 // Theme
-function toggleTheme(){D.settings.darkMode=!D.settings.darkMode;applyTheme();saveD()}
-function applyTheme(){document.documentElement.dataset.theme=D.settings.darkMode?'dark':'';document.getElementById('themeBtn').textContent=D.settings.darkMode?'\u2600':'\u25D1'}
+function toggleTheme(){
+  // Cycle: light → dark → auto
+  if(D.settings.darkMode==='auto'){D.settings.darkMode=false}
+  else if(D.settings.darkMode===true){D.settings.darkMode='auto'}
+  else{D.settings.darkMode=true}
+  applyTheme();saveD();
+}
+function applyTheme(){
+  const isDark=D.settings.darkMode==='auto'?window.matchMedia('(prefers-color-scheme:dark)').matches:!!D.settings.darkMode;
+  document.documentElement.dataset.theme=isDark?'dark':'';
+  const btn=document.getElementById('themeBtn');
+  btn.textContent=isDark?'\u2600':'\u25D1';
+  btn.title=D.settings.darkMode==='auto'?'跟随系统':isDark?'浅色':'深色';
+}
 
-// Trash
-function openTrash(){setFolder('__trash__');toggleSB()}
-function exitTrash(){curF=null;document.getElementById('trashB').style.display='none';render()}
+// Tag Management
+function openTagManager(){
+  toggleSB();
+  document.getElementById('tagMBbg').classList.add('open');
+  document.getElementById('tagMPanel').classList.add('open');
+  renderTagManager();
+}
+function renderTagManager(){
+  const body=document.getElementById('tagMBody');
+  // Collect all tags with counts
+  const tagMap={};
+  D.prompts.filter(p=>!p.deleted).forEach(p=>(p.tags||[]).forEach(t=>{tagMap[t]=(tagMap[t]||0)+1}));
+  const entries=Object.entries(tagMap).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){
+    body.innerHTML='<div style="text-align:center;padding:40px;color:var(--text2);opacity:.6"><div style="font-size:48px;margin-bottom:12px">🏷️</div><p>还没有标签</p><p style="font-size:13px;margin-top:8px">编辑提示词时可以添加标签</p></div>';
+    return;
+  }
+  let html='<div style="margin-bottom:16px;font-size:13px;color:var(--text2)">共 '+entries.length+' 个标签，点击可筛选，长按可操作</div>';
+  html+='<div style="display:flex;flex-wrap:wrap;gap:8px">';
+  entries.forEach(([tag,cnt])=>{
+    html+=`<div class="tag-m-chip" onclick="closePanel('tagMBbg','tagMPanel');filterByTag('${esc(tag)}')"><span class="tag-m-name">${esc(tag)}</span><span class="tag-m-cnt">${cnt}</span><button class="tag-m-rn" onclick="event.stopPropagation();renameTag('${esc(tag)}')" title="重命名">✏️</button><button class="tag-m-del" onclick="event.stopPropagation();deleteTag('${esc(tag)}')" title="删除">✕</button></div>`;
+  });
+  html+='</div>';
+  // Merge tags
+  if(entries.length>=2){
+    html+='<div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)"><div style="font-size:13px;color:var(--text2);margin-bottom:8px">合并标签</div><div style="display:flex;gap:8px;align-items:center"><select id="mergeFrom" style="flex:1;padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px">';
+    entries.forEach(([t])=>{html+=`<option value="${esc(t)}">${esc(t)}</option>`});
+    html+='</select><span style="color:var(--text2)">→</span><select id="mergeTo" style="flex:1;padding:8px;border-radius:8px;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:14px">';
+    entries.forEach(([t])=>{html+=`<option value="${esc(t)}">${esc(t)}</option>`});
+    html+='</select><button class="bp" style="padding:8px 14px;font-size:13px" onclick="mergeTags()">合并</button></div></div>';
+  }
+  body.innerHTML=html;
+}
+function renameTag(oldName){
+  const newName=prompt('重命名标签 "'+oldName+'" 为：',oldName);
+  if(!newName||newName===oldName||!newName.trim())return;
+  const n=newName.trim();
+  D.prompts.forEach(p=>{if(p.tags&&p.tags.includes(oldName)){p.tags=p.tags.map(t=>t===oldName?n:t)}});
+  if(activeTagFilters.includes(oldName)){activeTagFilters=activeTagFilters.map(t=>t===oldName?n:t)}
+  saveD();render();renderTagManager();toast('已重命名');
+}
+function deleteTag(tag){
+  if(!confirm('删除标签 "'+tag+'"？（不会删除提示词）'))return;
+  D.prompts.forEach(p=>{if(p.tags)p.tags=p.tags.filter(t=>t!==tag)});
+  activeTagFilters=activeTagFilters.filter(t=>t!==tag);
+  saveD();render();renderTagManager();toast('已删除');
+}
+function mergeTags(){
+  const from=document.getElementById('mergeFrom').value;
+  const to=document.getElementById('mergeTo').value;
+  if(from===to){toast('不能合并相同的标签');return}
+  if(!confirm('将 "'+from+'" 合并到 "'+to+'"？'))return;
+  D.prompts.forEach(p=>{
+    if(p.tags&&p.tags.includes(from)){
+      p.tags=p.tags.map(t=>t===from?to:t);
+      p.tags=[...new Set(p.tags)];
+    }
+  });
+  activeTagFilters=activeTagFilters.filter(t=>t!==from);
+  saveD();render();renderTagManager();toast('已合并');
+}
 
 // Export
 function exportD(){
@@ -1478,6 +1577,8 @@ function permDel(id) {
 function init(){
   try{
     applyTheme();
+    // Listen for system theme changes
+    if(window.matchMedia){window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(D.settings.darkMode==='auto')applyTheme()})}
     if(D.settings&&D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
     var gb=document.getElementById('gridBtn');
     if(gb)gb.textContent=(D.settings&&D.settings.grid===1)?'\u25A4':'\u25A3';
