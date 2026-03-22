@@ -108,9 +108,9 @@ public class MainActivity extends Activity {
         boolean dark = isDarkMode();
 
         if (dark) {
-            w.setStatusBarColor(Color.parseColor("#1C1C1E"));
+            w.setStatusBarColor(Color.parseColor("#171717"));
         } else {
-            w.setStatusBarColor(Color.parseColor("#F2F2F7"));
+            w.setStatusBarColor(Color.parseColor("#FAFAFE"));
         }
 
         w.setNavigationBarColor(Color.TRANSPARENT);
