@@ -73,6 +73,7 @@ public class MainActivity extends Activity {
                     "})()";
                 view.evaluateJavascript(js, null);
             }
+        });
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
