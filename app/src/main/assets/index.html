@@ -1588,7 +1588,7 @@ function openMopt() {
     <div class="mopt-item" onclick="importD();closeMopt()"><span class="mopt-icon">📥</span>导入数据</div>
     <div class="mopt-item" onclick="document.getElementById('shareIn').click();closeMopt()"><span class="mopt-icon">🔗</span>导入分享</div>
     <div class="mopt-author">
-      <div class="mopt-name">🦞 提示词盒子 v1.0.2.1</div>
+      <div class="mopt-name">🦞 提示词盒子 v1.0.2.2</div>
       <div onclick="showChangelog()" style="cursor:pointer;text-decoration:underline;opacity:0.6;font-size:13px">查看更新日志</div>
       <div style="margin-top:4px">@皮皮灭与由mimo-v2-pro驱动的openclaw🦞共同开发</div>
     </div>`;
@@ -1604,22 +1604,26 @@ function closeMopt() {
   document.getElementById('mopt').classList.remove('open');
 }
 var CHANGELOG=[
+  {v:'v1.0.2.2',date:'2026-03-22',changes:['修复更新日志弹窗层级问题','更新日志添加GitHub仓库链接','版本号同步更新']},
   {v:'v1.0.2.1',date:'2026-03-22',changes:['修复标签管理弹窗中的×按钮显示问题','修复深色模式状态栏与顶部栏颜色不一致','键盘输入时输入框自适应抬升','更多选项添加更新日志入口']},
   {v:'v1.0.2',date:'2026-03-22',changes:['标签重命名/删除/合并统一模态框样式','状态栏颜色与主题同步切换','添加版本号显示']},
   {v:'v1.0.1',date:'2026-03-21',changes:['Android WebView status bar 适配','小米 HyperOS 深色模式兼容','复制/分享按钮优化']},
   {v:'v1.0.0',date:'2026-03-20',changes:['初始版本：提示词 CRUD 管理','标签/文件夹/多维表格同步','PWA 支持 + Android APK 构建']}
 ];
 function showChangelog(){
-  var html='<div class="as-title">更新日志</div>';
-  CHANGELOG.forEach(function(c){
-    html+='<div style="padding:12px 16px;border-bottom:0.5px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:15px">'+esc(c.v)+'</strong><span style="font-size:12px;color:var(--text2)">'+c.date+'</span></div><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text2)">';
-    c.changes.forEach(function(ch){html+='<li style="margin:4px 0">'+esc(ch)+'</li>'});
-    html+='</ul></div>';
-  });
-  html+='<div style="padding:12px 16px"><button onclick="closeAS()" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">关闭</button></div>';
-  document.getElementById('asBody').innerHTML=html;
-  document.getElementById('asOL').classList.add('open');
-  document.getElementById('as').classList.add('open');
+  closeMopt();
+  setTimeout(function(){
+    var html='<div class="as-title">更新日志</div>';
+    html+='<div style="padding:6px 16px 12px;font-size:12px;color:var(--text2)">📦 提示词盒子 <a href="https://github.com/Tinyyysky/prompt_box" target="_blank" style="color:var(--primary);text-decoration:none">@GitHub</a></div>';
+    CHANGELOG.forEach(function(c){
+      html+='<div style="padding:12px 16px;border-bottom:0.5px solid var(--border)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong style="font-size:15px">'+esc(c.v)+'</strong><span style="font-size:12px;color:var(--text2)">'+c.date+'</span></div><ul style="margin:0;padding-left:18px;font-size:13px;color:var(--text2)">';
+      c.changes.forEach(function(ch){html+='<li style="margin:4px 0">'+esc(ch)+'</li>'});
+      html+='</ul></div>';
+    });
+    document.getElementById('asBody').innerHTML=html;
+    document.getElementById('asOL').classList.add('open');
+    document.getElementById('as').classList.add('open');
+  },100);
 }
 
 function permDel(id) {
