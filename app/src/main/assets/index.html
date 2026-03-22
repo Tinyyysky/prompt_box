@@ -704,7 +704,7 @@ function editP(id){
     document.getElementById('verArea').style.display='block';
     document.getElementById('verList').innerHTML=p.versions.map((v,i)=>`<div class="ver-item"><span class="ver-time">${fdate(v.savedAt)}</span><button class="ver-btn" onclick="restoreVersion('${id}',${i})">恢复</button></div>`).join('');
   }else{document.getElementById('verArea').style.display='none'}
-  pendingFiles=[];document.getElementById('mbg').classList.add('open');document.getElementById('modal').classList.add('open');
+  pendingFiles=[];document.getElementById('pFile').value='';document.getElementById('mbg').classList.add('open');document.getElementById('modal').classList.add('open');
 }
 function restoreVersion(pid,idx){
   const p=D.prompts.find(x=>x.id===pid);if(!p||!p.versions||!p.versions[idx])return;
@@ -787,6 +787,9 @@ function setColorMark(id,c){
 function preFiles(){
   const files=document.getElementById('pFile').files;
   for(const f of files){
+    // Skip if already in pendingFiles or pendingKeep (prevents duplicates from re-triggered onchange)
+    const exists=pendingFiles.some(p=>p.name===f.name&&p.size===f.size)||pendingKeep.some(p=>p.name===f.name&&p.size===f.size);
+    if(exists)continue;
     if(f.type.startsWith('image/')&&f.size>200000){
       const img=new Image();const url=URL.createObjectURL(f);
       img.onload=()=>{
@@ -797,7 +800,7 @@ function preFiles(){
         cv.getContext('2d').drawImage(img,0,0,w,h);
         cv.toBlob(bl=>{
           const r=new FileReader();
-          r.onload=e=>{pendingFiles.push({name:f.name,type:'image',url:e.target.result,thumb:e.target.result});renderAttachments()};
+          r.onload=e=>{pendingFiles.push({name:f.name,size:f.size,type:'image',url:e.target.result,thumb:e.target.result});renderAttachments()};
           r.readAsDataURL(bl);
           URL.revokeObjectURL(url);
         },'image/jpeg',0.65);
@@ -805,7 +808,7 @@ function preFiles(){
       img.src=url;
     }else{
       const reader=new FileReader();
-      reader.onload=e=>{pendingFiles.push({name:f.name,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
+      reader.onload=e=>{pendingFiles.push({name:f.name,size:f.size,type:f.type.split('/')[0]||'file',url:e.target.result,thumb:e.target.result});renderAttachments()};
       reader.readAsDataURL(f);
     }
   }
