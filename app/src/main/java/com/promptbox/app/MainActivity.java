@@ -184,6 +184,12 @@ public class MainActivity extends Activity {
         StatusBarBridge(Activity a) { activity = a; }
 
         @JavascriptInterface
+        public int getStatusBarHeight() {
+            int id = activity.getResources().getIdentifier("status_bar_height", "dimen", "android");
+            return id > 0 ? activity.getResources().getDimensionPixelSize(id) : 50;
+        }
+
+        @JavascriptInterface
         public void setStatusBarColor(String color) {
             activity.runOnUiThread(() -> {
                 try {
