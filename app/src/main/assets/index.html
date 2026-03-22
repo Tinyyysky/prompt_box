@@ -16,16 +16,16 @@ button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
 input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;outline:none;width:100%;transition:border .2s}input:focus,textarea:focus{border-color:var(--primary)}textarea{resize:vertical;min-height:80px}
 .bg-grad{position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#667eea08,#764ba206,#007AFF04);pointer-events:none}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
-.hdr{position:sticky;top:0;z-index:100;background:rgba(var(--bg2-rgb),0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;padding-top:max(12px,env(safe-area-inset-top))}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(var(--bg2-rgb),0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;padding-top:max(12px,var(--safe-top,12px))}
 .hdr h1{font-size:17px;font-weight:700;letter-spacing:-.3px;flex:1}
 .hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}.hdr-btn:active{transform:scale(.88)}
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
-.search{position:sticky;top:0;z-index:90;background:var(--bg);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));padding:10px 12px;display:flex;gap:8px;align-items:center;transition:max-height .35s cubic-bezier(.32,.72,0,1),opacity .35s,padding .35s;max-height:60px;overflow:hidden;will-change:max-height}
-.search.hide{max-height:0;padding:0 12px;opacity:0}
-.search-w{flex:1;position:relative;display:flex;align-items:center}.search-w input{background:var(--bg3);border:none;border-radius:var(--radius);padding:9px 34px 9px 34px;font-size:15px}
-.search-w::before{content:"\1F50D";position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:13px;opacity:.4;pointer-events:none}
-.search-clr{position:absolute;right:8px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--text3);color:var(--bg);font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;opacity:.6}.search-clr.show{display:flex}
-.search-act{display:flex;gap:5px}.pill{background:var(--bg3);border:none;border-radius:var(--radius-xs);padding:8px 10px;font-size:14px;color:var(--text2);transition:all .15s;min-width:38px;text-align:center}.pill:active{transform:scale(.88)}.search-scope{position:absolute;right:30px;top:50%;transform:translateY(-50%);z-index:1;padding:4px 6px;min-width:auto;background:transparent;font-size:13px}
+.search{position:sticky;top:0;z-index:90;background:var(--bg);padding:8px 14px;display:flex;gap:8px;align-items:center;transition:max-height .35s cubic-bezier(.32,.72,0,1),opacity .35s,padding .35s;max-height:60px;overflow:hidden;will-change:max-height}
+.search.hide{max-height:0;padding:0 14px;opacity:0}
+.search-w{flex:1;position:relative;display:flex;align-items:center}.search-w input{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border:none;border-radius:var(--radius);padding:10px 36px 10px 36px;font-size:15px;color:var(--text);width:100%;outline:none;transition:box-shadow .2s}.search-w input:focus{box-shadow:0 0 0 2px var(--primary),var(--shadow-card)}.search-w input::placeholder{color:var(--text3)}
+.search-w::before{content:"\1F50D";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;z-index:1}
+.search-clr{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--text3);color:var(--bg);font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;opacity:.6}.search-clr.show{display:flex}
+.search-act{display:flex;gap:5px}.pill{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border:none;border-radius:var(--radius-xs);padding:8px 10px;font-size:14px;color:var(--text2);transition:all .15s;min-width:38px;text-align:center}.pill:active{transform:scale(.88)}.search-scope{position:absolute;right:32px;top:50%;transform:translateY(-50%);z-index:1;padding:4px 6px;min-width:auto;background:transparent;font-size:13px}
 .tag-filter-bar{padding:4px 12px;display:flex;gap:6px;flex-wrap:wrap;overflow:hidden;transition:max-height .3s;max-height:0}.tag-filter-bar.show{max-height:60px;padding:6px 12px}
 .tf-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff;animation:ci .2s}.tf-chip button{font-size:10px;opacity:.7;margin-left:2px}
 .trash-b{background:rgba(255,59,48,.08);color:var(--danger);padding:10px 16px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px}.trash-b button{background:var(--danger);color:#fff;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:600}
@@ -64,7 +64,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .card-ft .info{margin-left:auto;font-size:10px;color:var(--text3)}
 .sb-ol{position:fixed;inset:0;background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}.sb-ol.open{opacity:1;pointer-events:auto}
 .sb{position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg2);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));z-index:201;transform:translateX(-100%);transition:transform .35s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;border-right:.5px solid var(--border)}.sb.open{transform:translateX(0)}
-.sb-hd{padding:5px 16px 12px;display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
+.sb-hd{padding:5px 16px 12px;padding-top:max(5px,var(--safe-top,5px));display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
 .sb-bd{flex:1;overflow-y:auto;padding:4px 8px}
 .sb-i{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:15px;font-weight:500;transition:all .15s}.sb-i:active{background:var(--bg3)}.sb-i.on{background:var(--primary-soft);color:var(--primary)}
 .sb-i .ic{font-size:18px;width:28px;text-align:center}.sb-i .badge{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;background:var(--bg3);padding:2px 8px;border-radius:10px}
@@ -467,6 +467,7 @@ function removeTagFilter(t){activeTagFilters=activeTagFilters.filter(x=>x!==t);r
 
 // ===== SIDEBAR =====
 function toggleSB(){document.getElementById('sbOL').classList.toggle('open');document.getElementById('sb').classList.toggle('open')}
+function openTrash(){setFolder('__trash__');toggleSB()}
 function renderSB(){
   const el=document.getElementById('folderList');
   let html=`<div class="sb-i ${curF===null?'on':''}" onclick="setFolder(null)"><span class="ic">\uD83D\uDCC2</span>全部<span class="badge">${D.prompts.filter(p=>!p.deleted).length}</span></div>`;
@@ -501,7 +502,7 @@ function newFolder(){
     html+='<div onclick="pickFolderColor(\''+c+'\')" style="width:32px;height:32px;border-radius:50%;background:'+c+';cursor:pointer;border:3px solid '+(i===0?'var(--primary)':'transparent')+';transition:border .15s" class="nf-c" data-color="'+c+'"></div>';
   });
   html+='</div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doNewFolder()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">创建</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doNewFolder()" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">创建</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -523,7 +524,7 @@ function delFolder(id){
   const f=D.folders.find(x=>x.id===id);if(!f)return;
   let html='<div class="as-title">确认删除</div>';
   html+='<div style="padding:16px;text-align:center;font-size:15px;color:var(--text)">确定删除文件夹「<b>'+esc(f.name)+'</b>」？<br><span style="font-size:13px;color:var(--text2)">文件夹内的提示词将移至根目录</span></div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doDelFolder(\''+id+'\')" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doDelFolder(\''+id+'\')" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1191,7 +1192,7 @@ function batchTag(){
   html+='<div style="padding:12px 16px"><input id="batchTagInput" type="text" placeholder="输入标签名称" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:15px;color:var(--text);outline:none;box-sizing:border-box"></div>';
   const allTags=[...new Set(D.prompts.flatMap(p=>p.tags||[]))];
   if(allTags.length){html+='<div style="padding:0 16px 8px;font-size:12px;color:var(--text2)">已有标签</div><div style="padding:0 16px 12px;display:flex;flex-wrap:wrap;gap:6px">'+allTags.map(t=>'<span class="tag-chip" onclick="document.getElementById(\'batchTagInput\').value=\''+esc(t)+'\'" style="cursor:pointer">'+esc(t)+'</span>').join('')+'</div>';}
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doBatchTag()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doBatchTag()" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1209,7 +1210,6 @@ function batchMove(){
   D.folders.forEach(f=>{
     html+='<div class="as-item" onclick="doBatchMove(\''+f.id+'\')"><span class="as-icon">'+(f.icon||'📁')+'</span>'+esc(f.name)+'</div>';
   });
-  html+='<div class="as-cancel" onclick="closeAS()">取消</div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1228,7 +1228,7 @@ function batchExport(){
 function batchDel(){
   let html='<div class="as-title">确认删除</div>';
   html+='<div style="padding:16px;text-align:center;font-size:15px;color:var(--text)">确定删除选中的 <b>'+selectedIds.size+'</b> 个提示词？<br><span style="font-size:13px;color:var(--text2)">将移至回收站</span></div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doBatchDel()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doBatchDel()" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--danger);color:#fff;border:none">删除</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1323,7 +1323,7 @@ function renderTagManager(){
 function renameTag(oldName){
   let html='<div class="as-title">重命名标签</div>';
   html+='<div style="padding:12px 16px"><label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px">原名称</label><div style="padding:10px 12px;background:var(--bg3);border-radius:10px;font-size:15px;color:var(--text2);margin-bottom:12px">'+esc(oldName)+'</div><label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px">新名称</label><input id="renameTagInput" type="text" value="'+esc(oldName)+'" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px;font-size:15px;color:var(--text);outline:none;box-sizing:border-box"></div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doRenameTag(\''+esc(oldName)+'\')" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doRenameTag(\''+esc(oldName)+'\')" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">确定</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1340,7 +1340,7 @@ function doRenameTag(oldName){
 function deleteTag(tag){
   let html='<div class="as-title">确认删除</div>';
   html+='<div style="padding:16px 16px 8px;text-align:center;font-size:15px">删除标签 <strong>"'+esc(tag)+'"</strong>？<div style="font-size:13px;color:var(--text2);margin-top:6px">不会删除关联的提示词</div></div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doDeleteTag(\''+esc(tag)+'\')" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:#ff3b30;color:#fff;border:none">删除</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doDeleteTag(\''+esc(tag)+'\')" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:#ff3b30;color:#fff;border:none">删除</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1356,7 +1356,7 @@ function mergeTags(){
   if(from===to){toast('不能合并相同的标签');return}
   let html='<div class="as-title">确认合并</div>';
   html+='<div style="padding:16px 16px 8px;text-align:center;font-size:15px">将 <strong>"'+esc(from)+'"</strong> 合并到 <strong>"'+esc(to)+'"</strong>？<div style="font-size:13px;color:var(--text2);margin-top:6px">所有使用 "'+esc(from)+'" 的提示词将改为 "'+esc(to)+'"</div></div>';
-  html+='<div style="padding:8px 16px 16px;display:flex;gap:8px"><button onclick="closeAS()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none">取消</button><button onclick="doMergeTags()" style="flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">合并</button></div>';
+  html+='<div style="padding:8px 16px 16px"><button onclick="doMergeTags()" style="width:100%;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none">合并</button></div>';
   document.getElementById('asBody').innerHTML=html;
   document.getElementById('asOL').classList.add('open');
   document.getElementById('as').classList.add('open');
@@ -1634,6 +1634,13 @@ function permDel(id) {
 function init(){
   try{
     applyTheme();
+    // Inject safe area top height for Android WebView
+    try{
+      if(window.AndroidBridge&&typeof AndroidBridge.getStatusBarHeight==='function'){
+        var sbH=AndroidBridge.getStatusBarHeight()||50;
+        document.documentElement.style.setProperty('--safe-top',sbH+'px');
+      }
+    }catch(e){document.documentElement.style.setProperty('--safe-top','50px')}
     // Listen for system theme changes
     if(window.matchMedia){window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{if(D.settings.darkMode==='auto')applyTheme()})}
     if(D.settings&&D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
