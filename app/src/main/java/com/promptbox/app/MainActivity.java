@@ -62,21 +62,28 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:max(50px," + sb + "px) !important}" +
-                    ".sb-hd{padding-top:max(50px," + sb + "px) !important}" +
+                    ".hdr{padding-top:" + sb + "px !important}" +
+                    ".sb-hd{padding-top:" + sb + "px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
-                    "var d=document.createElement('div');" +
-                    "d.id='_topDebug';" +
-                    "d.style.cssText='position:fixed;top:0;left:0;right:0;height:24px;background:lime;z-index:2147483647;display:flex;align-items:center;padding:0 8px;font-size:12px;font-family:monospace;color:#000';" +
-                    "d.textContent='SB=" + sb + "px NB=" + nb + "px header-start:' + (document.querySelector('.hdr').getBoundingClientRect().top|0) + 'px';" +
-                    "document.body.appendChild(d);" +
-                    "var _c=0;var _vals=[0,5,10,20,30,40,50,60,80,100,134];" +
-                    "d.onclick=function(){_c=(_c+1)%_vals.length;var h=document.querySelector('.hdr');h.style.paddingTop=_vals[_c]+'px';d.textContent='SB=" + sb + "px pad:'+_vals[_c]+'px top:'+h.getBoundingClientRect().top|0+'px';};" +
+                    "var sbH=" + sb + ";" +
+                    "var nbH=" + nb + ";" +
+                    "var dark=document.body.classList.contains('dark');" +
+                    "var bar=document.createElement('div');" +
+                    "bar.id='_sbBar';" +
+                    "bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbH+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:9999;pointer-events:none';" +
+                    "document.body.appendChild(bar);" +
+                    "var dbg=document.createElement('div');" +
+                    "dbg.id='_dbg';" +
+                    "dbg.style.cssText='position:fixed;top:'+(sbH+4)+'px;left:8px;z-index:9999;background:lime;color:#000;padding:4px 8px;font-size:11px;font-family:monospace;border-radius:6px;cursor:pointer';" +
+                    "dbg.textContent='SB:'+sbH+' NB:'+nbH+' top:'+(document.querySelector('.hdr').getBoundingClientRect().top|0)+'px';" +
+                    "document.body.appendChild(dbg);" +
+                    "var _p=0;var _v=[0,5,10,20,30,40,50,60,80,100,134];" +
+                    "dbg.onclick=function(){_p=(_p+1)%_v.length;var h=document.querySelector('.hdr');h.style.paddingTop=_v[_p]+'px';dbg.textContent='pad:'+_v[_p]+' top:'+h.getBoundingClientRect().top|0+'px';};" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
@@ -115,17 +122,15 @@ public class MainActivity extends Activity {
         Window w = getWindow();
         boolean dark = isDarkMode();
 
-        if (dark) {
-            w.setStatusBarColor(Color.parseColor("#171717"));
-        } else {
-            w.setStatusBarColor(Color.parseColor("#FAFAFE"));
-        }
-
+        // Transparent status bar - HTML handles safe area
+        w.setStatusBarColor(Color.TRANSPARENT);
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
+        flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
