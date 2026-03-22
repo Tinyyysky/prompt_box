@@ -277,18 +277,28 @@ function mdRender(s){
   return s
 }
 
-// Clipboard fallback (Android WebView may not have navigator.clipboard)
+// Clipboard copy with robust fallback for Android WebView
 function clipCopy(text){
-  if(navigator.clipboard&&navigator.clipboard.writeText){
-    return navigator.clipboard.writeText(text);
-  }
+  // Try execCommand first (most reliable on Android WebView, needs user gesture)
   return new Promise((resolve,reject)=>{
-    const ta=document.createElement('textarea');
-    ta.value=text;ta.style.cssText='position:fixed;left:-9999px;top:-9999px';
-    document.body.appendChild(ta);ta.select();
-    try{document.execCommand('copy')?resolve():reject(new Error('execCommand failed'))}
-    catch(e){reject(e)}
-    finally{document.body.removeChild(ta)}
+    try{
+      const ta=document.createElement('textarea');
+      ta.value=text;ta.readOnly=true;
+      ta.style.cssText='position:fixed;left:-9999px;top:-9999px;opacity:0';
+      document.body.appendChild(ta);
+      ta.select();ta.setSelectionRange(0,ta.value.length);
+      const ok=document.execCommand('copy');
+      document.body.removeChild(ta);
+      if(ok){resolve();return}
+    }catch(e){}
+    // Fallback: clipboard API (works on HTTPS)
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      try{
+        navigator.clipboard.writeText(text).then(resolve).catch(reject);
+        return;
+      }catch(e){}
+    }
+    reject(new Error('copy failed'));
   });
 }
 
@@ -760,13 +770,10 @@ function copyP(id){
 }
 function copyCountP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
-  const text=p.content;
-  clipCopy(text).then(()=>{
-    p.copyCount=(p.copyCount||0)+1;p.updatedAt=Date.now();
-    D.copyHistory.unshift({promptId:p.id,promptTitle:p.title,content:text,copiedAt:Date.now()});
-    if(D.copyHistory.length>15)D.copyHistory.length=15;
-    saveD();render();toast('\u5DF2\u590D\u5236 (\u526F\u672C+#'+(p.copyCount)+')');
-  }).catch(()=>toast('\u590D\u5236\u5931\u8D25'));
+  // Create a duplicate card
+  const dup={id:gid(),title:p.title+' - \u526F\u672C',content:p.content,example:p.example,tags:[...p.tags],folder:p.folder||'',starred:false,isPinned:false,colorMark:p.colorMark||'',attachments:p.attachments?[...p.attachments.map(a=>({...a}))]:[],copyCount:0,createdAt:Date.now(),updatedAt:Date.now()};
+  D.prompts.push(dup);saveD();render();closeM();
+  toast('\u5DF2\u521B\u5EFA\u526F\u672C');
 }
 async function shareP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
