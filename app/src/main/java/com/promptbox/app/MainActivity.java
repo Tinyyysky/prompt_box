@@ -65,7 +65,6 @@ public class MainActivity extends Activity {
                     ".sb-hd{padding-top:50px !important}" +
                     ".hdr{padding-top:50px !important}" +
                     ".search{padding-top:50px !important}" +
-                    ".search{top:50px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
