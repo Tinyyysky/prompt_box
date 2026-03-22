@@ -62,9 +62,9 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:35px !important}" +
-                    ".hdr,.search{padding-top:35px !important}" +
-                    ".sb-hd{padding-top:35px !important}" +
+                    ".hdr{padding-top:45px !important}" +
+                    ".hdr,.search{padding-top:45px !important;z-index:200 !important}" +
+                    ".sb-hd{padding-top:45px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
@@ -76,7 +76,7 @@ public class MainActivity extends Activity {
                     "var dark=document.body.classList.contains('dark');" +
                     "var bar=document.createElement('div');" +
                     "bar.id='_sbBar';" +
-                    "var sbUse=35;bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbUse+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:9999;pointer-events:none';" +
+                    "var sbUse=45;bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbUse+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:80;pointer-events:none';" +
                     "document.body.appendChild(bar);" +
                     "var dbg=document.createElement('div');" +
                     "dbg.id='_dbg';" +
