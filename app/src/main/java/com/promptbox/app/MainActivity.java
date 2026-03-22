@@ -62,27 +62,17 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".hdr{padding-top:45px !important}" +
-                    ".search{top:65px !important;z-index:200 !important}" +
-                    ".sb-hd{padding-top:45px !important}" +
+                    ".hdr{padding-top:35px !important}" +
+                    ".search{padding-top:35px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
-                    "var sbH=" + sb + ";" +
-                    "var nbH=" + nb + ";" +
-                    "var dark=document.body.classList.contains('dark');" +
-                    "var bar=document.createElement('div');" +
-                    "bar.id='_sbBar';" +
-                    "var sbUse=45;bar.style.cssText='position:fixed;top:0;left:0;right:0;height:'+sbUse+'px;background:'+(dark?'#171717':'#FAFAFE')+';z-index:80;pointer-events:none';" +
-                    "document.body.appendChild(bar);" +
-
                     "})()";
                 view.evaluateJavascript(js, null);
             }
-        });
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
@@ -117,15 +107,17 @@ public class MainActivity extends Activity {
         Window w = getWindow();
         boolean dark = isDarkMode();
 
-        // Transparent status bar - HTML handles safe area
-        w.setStatusBarColor(Color.TRANSPARENT);
+        if (dark) {
+            w.setStatusBarColor(Color.parseColor("#171717"));
+        } else {
+            w.setStatusBarColor(Color.parseColor("#FAFAFE"));
+        }
+
         w.setNavigationBarColor(Color.TRANSPARENT);
         w.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
 
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
-        flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-        flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
