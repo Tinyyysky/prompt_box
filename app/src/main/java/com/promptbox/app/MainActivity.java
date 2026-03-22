@@ -109,9 +109,9 @@ public class MainActivity extends Activity {
         boolean dark = isDarkMode();
 
         if (dark) {
-            w.setStatusBarColor(Color.TRANSPARENT);
+            w.setStatusBarColor(Color.parseColor("#171717"));
         } else {
-            // status bar color handled by edge-to-edge
+            w.setStatusBarColor(Color.parseColor("#FAFAFE"));
         }
 
         w.setNavigationBarColor(Color.TRANSPARENT);
@@ -119,8 +119,6 @@ public class MainActivity extends Activity {
 
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
-        flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-        flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
