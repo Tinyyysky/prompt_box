@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no">
-<meta name="theme-color" content="#000">
+<meta name="theme-color" content="#F2F2F7">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <title>提示词盒子</title>
@@ -1281,6 +1281,16 @@ function applyTheme(){
   document.documentElement.dataset.theme=isDark?'dark':'';
   const btn=document.getElementById('themeBtn');
   btn.textContent=isDark?'\u2600':'\u25D1';
+  // Update theme-color meta for status bar
+  const bgColor=isDark?'#1C1C1E':'#F2F2F7';
+  let meta=document.querySelector('meta[name="theme-color"]');
+  if(meta)meta.setAttribute('content',bgColor);
+  // Android WebView status bar color
+  try{
+    if(window.AndroidBridge&&typeof AndroidBridge.setStatusBarColor==='function'){
+      AndroidBridge.setStatusBarColor(bgColor);
+    }
+  }catch(e){}
 }
 
 // Tag Management
@@ -1580,6 +1590,34 @@ function init(){
     if(D.settings&&D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
     var gb=document.getElementById('gridBtn');
     if(gb)gb.textContent=(D.settings&&D.settings.grid===1)?'\u25A4':'\u25A3';
+    // Keyboard adaptive positioning
+    if(window.visualViewport){
+      var modal=document.getElementById('modal');
+      var asEl=document.querySelector('.as');
+      var moptEl=document.getElementById('mopt');
+      visualViewport.addEventListener('resize',function(){
+        var kb=window.innerHeight-visualViewport.height;
+        if(kb>50){
+          // Keyboard is open — adjust bottom-anchored panels
+          var panels=[modal,asEl,moptEl];
+          panels.forEach(function(el){
+            if(el&&el.classList.contains('open')){
+              el.style.transform='translateY(-'+kb+'px)';
+            }
+          });
+          // Also move the background overlay
+          var mBg=document.getElementById('mbg');
+          if(mBg&&mBg.classList.contains('open')){mBg.style.bottom=-kb+'px'}
+        } else {
+          // Keyboard closed — reset
+          modal&&(modal.style.transform='');
+          asEl&&(asEl.style.transform='');
+          moptEl&&(moptEl.style.transform='');
+          var mBg=document.getElementById('mbg');
+          if(mBg){mBg.style.bottom=''}
+        }
+      });
+    }
     render();
   }catch(e){
     console.error('init error:',e);
