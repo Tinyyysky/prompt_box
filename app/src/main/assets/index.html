@@ -566,6 +566,8 @@ function initStack(wrap){
 
 // ===== MODAL =====
 function openM(fromTpl,showTpl){
+  try{
+  console.log('openM called',fromTpl,showTpl);
   editId=null;editTags=[];pendingFiles=[];pendingKeep=[];mdMode='edit';
   document.getElementById('pT').value='';document.getElementById('pC').value='';document.getElementById('pE').value='';
   renderEditTags();document.getElementById('pF').innerHTML='<option value="">无</option>'+D.folders.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
@@ -581,6 +583,8 @@ function openM(fromTpl,showTpl){
   // Color picker
   document.getElementById('colorPick').innerHTML=CCOLORS.map(c=>`<div class="cp-dot" style="background:${c}" data-color="${c}" onclick="pickColor(this,'${c}')"></div>`).join('')+'<div class="cp-dot" style="background:var(--bg3)" data-color="" onclick="pickColor(this,\'\')" title="无"></div>';
   document.getElementById('mbg').classList.add('open');document.getElementById('modal').classList.add('open');
+  console.log('openM success');
+  }catch(e){console.error('openM error:',e.message,e.stack);toast('打开失败: '+e.message)}
 }
 function closeM(){document.getElementById('mbg').classList.remove('open');document.getElementById('modal').classList.remove('open')}
 function useTemplate(id){
