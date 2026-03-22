@@ -62,7 +62,6 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
-                    ".sb-hd{padding-top:50px !important}" +
                     ".hdr{padding-top:50px !important}" +
                     ".search{padding-top:50px !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
@@ -71,6 +70,8 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
+                    "var bar=document.getElementById('sbBar');if(bar)bar.style.display='none';" +
+                    "document.documentElement.style.setProperty('--safe-top','50px');" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
