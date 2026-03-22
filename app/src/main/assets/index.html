@@ -238,7 +238,7 @@ let D=loadD(),curF=null,editId=null,editTags=[],pendingFiles=[],pendingKeep=[],s
 
 let activeTagFilters=[],mdMode='edit',dragSrcId=null;
 function defD(){return{prompts:[],folders:[],templates:[],copyHistory:[],settings:{darkMode:false,grid:1,themeColor:'#007AFF'},nid:1}}
-function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates)d.templates=[];if(!d.copyHistory)d.copyHistory=[];if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!d.prompts)d.prompts=[];return d}}catch(e){}return defD()}
+function loadD(){try{const r=localStorage.getItem(SK);if(r){const d=JSON.parse(r);if(!d.templates||!Array.isArray(d.templates))d.templates=[];if(!d.copyHistory||!Array.isArray(d.copyHistory))d.copyHistory=[];if(!d.settings||typeof d.settings!=='object')d.settings={darkMode:false,grid:1,themeColor:'#007AFF'};if(!d.settings.themeColor)d.settings.themeColor='#007AFF';if(!Array.isArray(d.prompts))d.prompts=[];if(!Array.isArray(d.folders))d.folders=[];return d}}catch(e){console.error('loadD error:',e)}return defD()}
 let saveTimer;
 function saveD(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>saveDNow(),300)}
 function saveDNow(){
@@ -268,6 +268,21 @@ function mdRender(s){
   return s
 }
 
+// Clipboard fallback (Android WebView may not have navigator.clipboard)
+function clipCopy(text){
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    return navigator.clipboard.writeText(text);
+  }
+  return new Promise((resolve,reject)=>{
+    const ta=document.createElement('textarea');
+    ta.value=text;ta.style.cssText='position:fixed;left:-9999px;top:-9999px';
+    document.body.appendChild(ta);ta.select();
+    try{document.execCommand('copy')?resolve():reject(new Error('execCommand failed'))}
+    catch(e){reject(e)}
+    finally{document.body.removeChild(ta)}
+  });
+}
+
 // Save with version
 function saveWithVersion(p){
   if(!p.versions)p.versions=[];
@@ -277,6 +292,7 @@ function saveWithVersion(p){
 
 // ===== RENDER =====
 function render(){
+  try{
   let list=[...D.prompts];
   // Trash filter
   if(curF==='__trash__'){
@@ -358,6 +374,7 @@ function render(){
     return`<div class="card ${sel}${hasImg?' has-img':''}" style="animation-delay:${i*30}ms;${cc}" data-id="${p.id}" ${dragAttr} onclick="cardTap('${p.id}')">${atG}<div class="card-body"><div class="card-top"><div class="card-title">${esc(p.title)}</div><div class="card-pin ${pinned}" onclick="event.stopPropagation();togglePin('${p.id}')">\uD83D\uDCCC</div><div class="card-fav ${faved}" onclick="event.stopPropagation();toggleStar('${p.id}')">\u2B50</div></div>${cHtml}${exHtml}</div>${tags?`<div class="card-tags">${tags}</div>`:''}<div class="card-ft"><button class="cp" onclick="event.stopPropagation();copyP('${p.id}')">\u2398</button><button onclick="event.stopPropagation();editP('${p.id}')">\u270F\uFE0F</button><button onclick="event.stopPropagation();shareP('${p.id}')">\uD83D\uDCE4</button><button onclick="event.stopPropagation();restoreP('${p.id}')" style="${curF==='__trash__'?'':'display:none'}">\uD83D\uDD04</button><span class="info">${fdate(p.updatedAt||p.createdAt)} \u00B7 ${p.copyCount||0}\u6B21</span></div></div>`;
   }).join('');
   renderSB();renderTagFilter();
+  }catch(e){console.error('render error:',e)}
 }
 
 function renderOnboard(empty){
@@ -714,7 +731,7 @@ function copyP(id){
     for(const v of vs){const val=prompt(`\u53D8\u91CF ${v}:`,vm[v]||'');if(val===null){filled=false;break}saveVarVal(v,val);text=text.replaceAll(`{{${v}}}`,val)}
     if(!filled)return;
   }
-  navigator.clipboard.writeText(text).then(()=>{
+  clipCopy(text).then(()=>{
     p.copyCount=(p.copyCount||0)+1;p.updatedAt=Date.now();
     D.copyHistory.unshift({promptId:p.id,promptTitle:p.title,content:text,copiedAt:Date.now()});
     if(D.copyHistory.length>15)D.copyHistory.length=15;
@@ -724,7 +741,7 @@ function copyP(id){
 function copyCountP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
   const text=p.content;
-  navigator.clipboard.writeText(text).then(()=>{
+  clipCopy(text).then(()=>{
     p.copyCount=(p.copyCount||0)+1;p.updatedAt=Date.now();
     D.copyHistory.unshift({promptId:p.id,promptTitle:p.title,content:text,copiedAt:Date.now()});
     if(D.copyHistory.length>15)D.copyHistory.length=15;
@@ -734,7 +751,7 @@ function copyCountP(id){
 function shareP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
   const data={title:p.title,content:p.content,example:p.example,tags:p.tags,sharedAt:new Date().toISOString()};
-  navigator.clipboard.writeText(JSON.stringify(data,null,2)).then(()=>toast('\u5DF2\u590D\u5236\u5206\u4EABJSON\uFF0C\u53D1\u7ED9\u522B\u4EBA\u5373\u53EF\u5BFC\u5165')).catch(()=>toast('\u590D\u5236\u5931\u8D25'));
+  clipCopy(JSON.stringify(data,null,2)).then(()=>toast('\u5DF2\u590D\u5236\u5206\u4EABJSON\uFF0C\u53D1\u7ED9\u522B\u4EBA\u5373\u53EF\u5BFC\u5165')).catch(()=>toast('\u590D\u5236\u5931\u8D25'));
 }
 function handleShareImp(e){
   const f=e.target.files[0];if(!f)return;
@@ -891,7 +908,7 @@ function openHistory(){
   document.getElementById('panelTitle').textContent='\uD83D\uDDC4 \u590D\u5236\u5386\u53F2';
   if(!D.copyHistory.length){document.getElementById('panelBody').innerHTML='<div class="empty" style="padding:40px"><p>\u6682\u65E0\u590D\u5236\u8BB0\u5F55</p></div>'}
   else{
-    document.getElementById('panelBody').innerHTML=D.copyHistory.map(h=>`<div class="hist-item" onclick="navigator.clipboard.writeText(\`${h.content.replace(/`/g,'\\`')}\`).then(()=>toast('\u5DF2\u590D\u5236'))"><span class="h-title">${esc(h.promptTitle)}</span><span class="h-time">${fdate(h.copiedAt)}</span><button class="h-cp">\u590D\u5236</button></div>`).join('');
+    document.getElementById('panelBody').innerHTML=D.copyHistory.map(h=>`<div class="hist-item" onclick="clipCopy(\`${h.content.replace(/`/g,'\\`')}\`).then(()=>toast('\u5DF2\u590D\u5236'))"><span class="h-title">${esc(h.promptTitle)}</span><span class="h-time">${fdate(h.copiedAt)}</span><button class="h-cp">\u590D\u5236</button></div>`).join('');
   }
   document.getElementById('statsBbg').classList.add('open');document.getElementById('statsPanel').classList.add('open');
 }
@@ -1079,11 +1096,19 @@ function permDel(id) {
   saveD(); render(); toast('已永久删除');
 }
 function init(){
-  applyTheme();
-  if(D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
-  document.getElementById('gridBtn').textContent=D.settings.grid===1?'\u25A4':'\u25A3';
-  render();
+  try{
+    applyTheme();
+    if(D.settings&&D.settings.themeColor){document.documentElement.style.setProperty('--primary',D.settings.themeColor)}
+    var gb=document.getElementById('gridBtn');
+    if(gb)gb.textContent=(D.settings&&D.settings.grid===1)?'\u25A4':'\u25A3';
+    render();
+  }catch(e){
+    console.error('init error:',e);
+    document.getElementById('cardsBox').innerHTML='<div class="empty"><div class="icon">⚠️</div><p>加载出错: '+esc(e.message)+'</p><p style="font-size:13px;margin-top:8px"><button onclick="localStorage.removeItem(\'promptbox_data\');location.reload()" style="background:var(--primary);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px">重置数据并刷新</button></p></div>';
+  }
 }
+// Global error handler
+window.onerror=function(msg,src,line){console.error('Global error:',msg,src,line);};
 init();
 </script>
 </body>
