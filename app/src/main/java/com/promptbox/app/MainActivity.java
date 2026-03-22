@@ -70,6 +70,13 @@ public class MainActivity extends Activity {
                     ".toast{bottom:max(28px," + nb + "px) !important}" +
                     "';" +
                     "document.head.appendChild(s);" +
+                    "var d=document.createElement('div');" +
+                    "d.id='_topDebug';" +
+                    "d.style.cssText='position:fixed;top:0;left:0;right:0;height:24px;background:lime;z-index:2147483647;display:flex;align-items:center;padding:0 8px;font-size:12px;font-family:monospace;color:#000';" +
+                    "d.textContent='SB=" + sb + "px NB=" + nb + "px header-start:' + (document.querySelector('.hdr').getBoundingClientRect().top|0) + 'px';" +
+                    "document.body.appendChild(d);" +
+                    "var _c=0;var _vals=[0,5,10,20,30,40,50,60,80,100,134];" +
+                    "d.onclick=function(){_c=(_c+1)%_vals.length;var h=document.querySelector('.hdr');h.style.paddingTop=_vals[_c]+'px';d.textContent='SB=" + sb + "px pad:'+_vals[_c]+'px top:'+h.getBoundingClientRect().top|0+'px';};" +
                     "})()";
                 view.evaluateJavascript(js, null);
             }
