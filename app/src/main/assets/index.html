@@ -201,6 +201,15 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
   <div class="stats-bd" id="panelBody"></div>
 </div>
 <div class="vm" id="vm"><div class="vm-b" id="vmB"></div></div>
+<div class="mbg" id="varBbg" onclick="closeVarModal(false)"></div>
+<div class="as" id="varPanel" style="max-width:380px;width:90vw">
+  <div class="as-hd" id="varTitle">填写变量</div>
+  <div id="varFields" style="padding:0 16px;max-height:50vh;overflow-y:auto"></div>
+  <div class="m-ft" style="padding:12px 16px">
+    <button class="bs" onclick="closeVarModal(false)">取消</button>
+    <button class="bp" onclick="closeVarModal(true)">确定复制</button>
+  </div>
+</div>
 <div class="toast" id="toast"></div>
 <div class="kbd-hint" id="kbdHint"></div>
 <div class="img-viewer" id="imgViewer" onclick="closeImgViewer()"><img id="imgViewerSrc" src="" alt=""></div>
@@ -810,19 +819,61 @@ function rmKeepAt(i){pendingKeep.splice(i,1);renderAttachments()}
 function rmFileAt(i){pendingFiles.splice(i,1);renderAttachments()}
 
 // ===== ACTIONS =====
+// Variable helpers
+function vars(text){const m=text.match(/\{\{([^{}]+)\}\}/g);return m?[...new Set(m.map(v=>v.slice(2,-2)))] :[]}
+function getVMem(){try{return JSON.parse(localStorage.getItem('pb_vars'))||{}}catch(e){return{}}}
+function saveVarVal(n,v){try{const vm=getVMem();vm[n]=v;localStorage.setItem('pb_vars',JSON.stringify(vm))}catch(e){}}
+
+// Var modal state
+let _varResolve=null,_varVars=[],_varVMem={};
+function openVarModal(varList){
+  return new Promise((resolve,reject)=>{
+    _varResolve=resolve;_varVars=varList;_varVMem=getVMem();
+    const fields=document.getElementById('varFields');
+    fields.innerHTML=varList.map(v=>'<div style="margin:10px 0"><label style="display:block;font-size:13px;color:var(--text2);margin-bottom:6px;font-weight:500">'+v+'</label><input type="text" data-var="'+v+'" value="'+(_varVMem[v]||'')+'" style="font-size:15px;padding:10px 12px;border-radius:10px;background:var(--bg3);border:1px solid var(--border2);outline:none;width:100%;box-sizing:border-box"></div>').join('');
+    document.getElementById('varBbg').classList.add('open');
+    document.getElementById('varPanel').classList.add('open');
+    setTimeout(()=>{const first=fields.querySelector('input');if(first)first.focus()},200);
+  });
+}
+function closeVarModal(ok){
+  if(ok){
+    const result={};
+    document.querySelectorAll('#varFields input').forEach(inp=>{
+      result[inp.dataset.var]=inp.value;
+    });
+    _varResolve(result);
+  }else{
+    _varResolve(null);
+  }
+  _varResolve=null;
+  document.getElementById('varBbg').classList.remove('open');
+  document.getElementById('varPanel').classList.remove('open');
+}
+
 function copyP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
-  const vs=vars(p.content);let text=p.content;
+  const vs=vars(p.content);
   if(vs.length){
-    const vm=getVMem();let filled=true;
-    for(const v of vs){const val=prompt(`\u53D8\u91CF ${v}:`,vm[v]||'');if(val===null){filled=false;break}saveVarVal(v,val);text=text.replaceAll(`{{${v}}}`,val)}
-    if(!filled)return;
+    // Show variable modal instead of prompt()
+    openVarModal(vs).then(result=>{
+      if(!result)return;
+      let text=p.content;
+      for(const v of vs){const val=result[v]||'';saveVarVal(v,val);text=text.replaceAll('{{'+v+'}}',val)}
+      doCopy(text,p);
+    });
+  }else{
+    doCopy(p.content,p);
   }
+}
+function doCopy(text,p){
   clipCopy(text).then(()=>{
     p.copyCount=(p.copyCount||0)+1;p.updatedAt=Date.now();
     D.copyHistory.unshift({promptId:p.id,promptTitle:p.title,content:text,copiedAt:Date.now()});
     if(D.copyHistory.length>15)D.copyHistory.length=15;
-    saveD();const info=document.querySelector(`.card[data-id="${id}"] .info`);if(info)info.textContent=`${fdate(p.updatedAt||p.createdAt)} \u00B7 ${p.copyCount}\u6B21`;toast('\u5DF2\u590D\u5236');
+    saveD();const info=document.querySelector('.card[data-id="'+p.id+'"] .info');
+    if(info)info.textContent=fdate(p.updatedAt||p.createdAt)+' · '+(p.copyCount||0)+'\u6B21';
+    toast('\u5DF2\u590D\u5236');
   }).catch(()=>toast('\u590D\u5236\u5931\u8D25'));
 }
 function copyCountP(id){
