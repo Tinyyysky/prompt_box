@@ -16,7 +16,8 @@ button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
 input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;outline:none;width:100%;transition:border .2s}input:focus,textarea:focus{border-color:var(--primary)}textarea{resize:vertical;min-height:80px}
 .bg-grad{position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#667eea08,#764ba206,#007AFF04);pointer-events:none}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
-.hdr{position:sticky;top:0;z-index:100;background:rgba(var(--bg2-rgb),0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;padding-top:max(12px,var(--safe-top,12px))}
+.hdr{position:sticky;top:0;z-index:100;background:rgba(var(--bg2-rgb),0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:.5px solid var(--border);padding:12px 16px;display:flex;align-items:center;gap:12px;padding-top:max(12px,calc(var(--safe-top,12px) + 4px))}
+.sb-bar{position:fixed;top:0;left:0;right:0;height:var(--safe-top,0px);background:rgba(var(--bg2-rgb,255,255,255),0.72);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);z-index:99;pointer-events:none}
 .hdr h1{font-size:17px;font-weight:700;letter-spacing:-.3px;flex:1}
 .hdr-btn{width:36px;height:36px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s}.hdr-btn:active{transform:scale(.88)}
 .content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain}
@@ -64,7 +65,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .card-ft .info{margin-left:auto;font-size:10px;color:var(--text3)}
 .sb-ol{position:fixed;inset:0;background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:200;opacity:0;pointer-events:none;transition:opacity .3s}.sb-ol.open{opacity:1;pointer-events:auto}
 .sb{position:fixed;left:0;top:0;bottom:0;width:280px;background:var(--bg2);backdrop-filter:blur(var(--blur));-webkit-backdrop-filter:blur(var(--blur));z-index:201;transform:translateX(-100%);transition:transform .35s cubic-bezier(.32,.72,0,1);display:flex;flex-direction:column;border-right:.5px solid var(--border)}.sb.open{transform:translateX(0)}
-.sb-hd{padding:5px 16px 12px;padding-top:max(5px,var(--safe-top,5px));display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
+.sb-hd{padding:5px 16px 12px;padding-top:max(5px,calc(var(--safe-top,5px) + 4px));display:flex;align-items:center;justify-content:space-between}.sb-hd h2{font-size:20px;font-weight:700;letter-spacing:-.3px}.sb-hd button{width:28px;height:28px;border-radius:50%;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px}
 .sb-bd{flex:1;overflow-y:auto;padding:4px 8px}
 .sb-i{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:15px;font-weight:500;transition:all .15s}.sb-i:active{background:var(--bg3)}.sb-i.on{background:var(--primary-soft);color:var(--primary)}
 .sb-i .ic{font-size:18px;width:28px;text-align:center}.sb-i .badge{margin-left:auto;font-size:11px;color:var(--text2);font-weight:600;background:var(--bg3);padding:2px 8px;border-radius:10px}
@@ -79,6 +80,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .m-ft{padding:12px 16px;border-top:.5px solid var(--border);display:flex;gap:8px;flex-shrink:0;padding-bottom:max(12px,env(safe-area-inset-bottom))}.m-ft button{flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;transition:opacity .15s}.m-ft button:active{opacity:.5}
 .bp{background:var(--primary);color:#fff}.bs{background:var(--bg3);color:var(--text)}.bd{background:var(--danger);color:#fff}
 .pa{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.file-btn{display:inline-flex;align-items:center;gap:4px;padding:8px 14px;background:var(--bg3);border-radius:var(--radius-xs);font-size:13px;font-weight:500;color:var(--primary);cursor:pointer;transition:all .15s;margin-top:4px}.file-btn:active{background:var(--primary-soft);transform:scale(.96)}
 .pt{position:relative;width:72px;height:72px;border-radius:var(--radius-xs);overflow:hidden;background:var(--bg3)}.pt img,.pt video{width:100%;height:100%;object-fit:cover}.pt .rm{position:absolute;top:2px;right:2px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center}
 .pf{display:flex;align-items:center;gap:6px;padding:6px 10px;background:var(--bg3);border-radius:var(--radius-xs);font-size:12px;color:var(--text2)}.pf .rm{font-size:10px;color:var(--danger)}
 .tw{display:flex;flex-wrap:wrap;gap:6px;padding:8px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);min-height:44px;align-items:center;cursor:text}
@@ -142,6 +144,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 </head>
 <body>
 <div class="bg-grad"></div>
+<div class="sb-bar" id="sbBar"></div>
 <div class="app" id="app">
 <div class="hdr" id="hdr"><button class="hdr-btn" onclick="toggleSB()">&#9776;</button><h1 id="hdrT">提示词盒子</h1><button class="hdr-btn" onclick="toggleTheme()" id="themeBtn">&#9780;</button></div>
 <div class="content" id="content">
@@ -192,7 +195,7 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
     <div><label>标签</label><div class="tw" id="tagW" onclick="this.querySelector('input').focus()"><input type="text" id="tagIn" placeholder="输入标签回车添加" onkeydown="tagKey(event)"></div></div>
     <div><label>文件夹</label><select id="pF"><option value="">无</option></select></div>
     <div><label>卡片颜色</label><div class="cp-inline" id="colorPick"></div></div>
-    <div><label>附件</label><input type="file" id="pFile" accept="image/*,audio/*,video/*,.txt,.md,.json" multiple onchange="preFiles()"><div class="pa" id="prevArea"></div></div>
+    <div><label>附件</label><input type="file" id="pFile" accept="image/*,audio/*,video/*,.txt,.md,.json" multiple onchange="preFiles()" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"><label for="pFile" class="file-btn">＋ 添加附件</label><div class="pa" id="prevArea"></div></div>
     <div id="verArea" style="display:none"><label>版本历史</label><div id="verList"></div></div>
   </div>
   <div class="m-ft"><button class="bs" onclick="closeM()">取消</button><button class="bs" id="mCopyCount" onclick="copyCountP(editId)" style="display:none">⎘ 复制副本</button><button class="bd" id="mDel" onclick="delP()" style="display:none">删除</button><button class="bp" onclick="saveP()" id="saveBtn">保存</button></div>
@@ -466,7 +469,21 @@ function filterByTag(t){if(!activeTagFilters.includes(t)){activeTagFilters.push(
 function removeTagFilter(t){activeTagFilters=activeTagFilters.filter(x=>x!==t);render()}
 
 // ===== SIDEBAR =====
-function toggleSB(){document.getElementById('sbOL').classList.toggle('open');document.getElementById('sb').classList.toggle('open')}
+function toggleSB(){
+  document.getElementById('sbOL').classList.toggle('open');
+  document.getElementById('sb').classList.toggle('open');
+  var sb=document.getElementById('sbBar');
+  var isOpen=document.getElementById('sb').classList.contains('open');
+  if(isOpen){
+    // Match sidebar color (var(--bg2))
+    var dark=document.documentElement.getAttribute('data-theme')==='dark';
+    sb.style.background=dark?'rgba(30,30,30,0.78)':'rgba(255,255,255,0.72)';
+  }else{
+    // Match header color
+    var dark=document.documentElement.getAttribute('data-theme')==='dark';
+    sb.style.background=dark?'rgba(30,30,30,0.72)':'rgba(255,255,255,0.72)';
+  }
+}
 function openTrash(){setFolder('__trash__');toggleSB()}
 function renderSB(){
   const el=document.getElementById('folderList');
@@ -1285,6 +1302,9 @@ function applyTheme(){
   const headerColor=isDark?'#171717':'#FAFAFE';
   let meta=document.querySelector('meta[name="theme-color"]');
   if(meta)meta.setAttribute('content',headerColor);
+  // Update status bar overlay color
+  var sb=document.getElementById('sbBar');
+  if(sb)sb.style.background=isDark?'rgba(30,30,30,0.72)':'rgba(255,255,255,0.72)';
   // Android WebView status bar color
   try{
     if(window.AndroidBridge&&typeof AndroidBridge.setStatusBarColor==='function'){
@@ -1588,7 +1608,7 @@ function openMopt() {
     <div class="mopt-item" onclick="importD();closeMopt()"><span class="mopt-icon">📥</span>导入数据</div>
     <div class="mopt-item" onclick="document.getElementById('shareIn').click();closeMopt()"><span class="mopt-icon">🔗</span>导入分享</div>
     <div class="mopt-author">
-      <div class="mopt-name">🦞 提示词盒子 v1.0.2.2</div>
+      <div class="mopt-name">🦞 提示词盒子 v1.0.2.3</div>
       <div onclick="showChangelog()" style="cursor:pointer;text-decoration:underline;opacity:0.6;font-size:13px">查看更新日志</div>
       <div style="margin-top:4px">@皮皮灭与由mimo-v2-pro驱动的openclaw🦞共同开发</div>
     </div>`;
@@ -1604,6 +1624,7 @@ function closeMopt() {
   document.getElementById('mopt').classList.remove('open');
 }
 var CHANGELOG=[
+  {v:'v1.0.2.3',date:'2026-03-22',changes:['状态栏区域增加模糊层（sb-bar）','侧边栏打开时状态栏颜色与侧边栏同步','编辑卡片附件按钮样式优化','默认 safe-top 兜底设置',' header padding 调整']},
   {v:'v1.0.2.2',date:'2026-03-22',changes:['修复更新日志弹窗层级问题','更新日志添加GitHub仓库链接','版本号同步更新']},
   {v:'v1.0.2.1',date:'2026-03-22',changes:['修复标签管理弹窗中的×按钮显示问题','修复深色模式状态栏与顶部栏颜色不一致','键盘输入时输入框自适应抬升','更多选项添加更新日志入口']},
   {v:'v1.0.2',date:'2026-03-22',changes:['标签重命名/删除/合并统一模态框样式','状态栏颜色与主题同步切换','添加版本号显示']},
@@ -1636,6 +1657,7 @@ function init(){
     applyTheme();
     // Inject safe area top height for Android WebView
     try{
+      document.documentElement.style.setProperty('--safe-top','0px');
       if(window.AndroidBridge&&typeof AndroidBridge.getStatusBarHeight==='function'){
         var sbH=AndroidBridge.getStatusBarHeight()||50;
         document.documentElement.style.setProperty('--safe-top',sbH+'px');
