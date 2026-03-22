@@ -62,6 +62,7 @@ public class MainActivity extends Activity {
                 String js = "(function(){" +
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
+                    ".hdr{padding-top:calc(" + sb + "px + 12px) !important}" +
                     ".sb-hd{padding-top:max(50px," + sb + "px) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
@@ -108,9 +109,9 @@ public class MainActivity extends Activity {
         boolean dark = isDarkMode();
 
         if (dark) {
-            w.setStatusBarColor(Color.parseColor("#171717"));
+            w.setStatusBarColor(Color.TRANSPARENT);
         } else {
-            w.setStatusBarColor(Color.parseColor("#FAFAFE"));
+            // status bar color handled by edge-to-edge
         }
 
         w.setNavigationBarColor(Color.TRANSPARENT);
@@ -118,6 +119,8 @@ public class MainActivity extends Activity {
 
         View dv = w.getDecorView();
         int flags = dv.getSystemUiVisibility();
+        flags |= View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        flags |= View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (dark) {
                 flags &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
