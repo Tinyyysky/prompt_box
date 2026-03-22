@@ -152,5 +152,4 @@ apksigner sign --ks promptbox.keystore aligned.apk
 ---
 
 > 本项目由 [皮皮灭](https://github.com/Tinyyysky) 与由 mimo-v2-pro 驱动的 openclaw 🦞 共同开发。
->
-> 大约 99% 的代码是 AI 写的，1% 的 bug 是人类贡献的。
+
