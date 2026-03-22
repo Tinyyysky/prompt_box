@@ -11,7 +11,9 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{--blur:24px;--blur-sm:16px;--bg:#F2F2F7;--bg2:rgba(255,255,255,.72);--bg2-rgb:255,255,255;--bg3:rgba(118,118,128,.12);--text:#1C1C1E;--text2:#8E8E93;--text3:#C7C7CC;--primary:#007AFF;--primary-soft:rgba(0,122,255,.08);--danger:#FF3B30;--success:#34C759;--warn:#FF9500;--border:rgba(0,0,0,.08);--border2:rgba(0,0,0,.12);--shadow-card:0 0 0 .5px rgba(0,0,0,.04),0 2px 8px rgba(0,0,0,.04);--shadow-hover:0 0 0 .5px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.08);--card-grad:linear-gradient(180deg,rgba(255,255,255,.9),rgba(248,248,252,.95));--radius:14px;--radius-sm:12px;--radius-xs:10px;--radius-tag:20px;--font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
 [data-theme="dark"]{--bg:#000;--bg2:rgba(30,30,30,.78);--bg2-rgb:30,30,30;--bg3:rgba(58,58,60,.65);--text:#F5F5F7;--text2:#8E8E93;--text3:#48484A;--border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);--shadow-card:0 0 0 .5px rgba(255,255,255,.06),0 2px 8px rgba(0,0,0,.2);--shadow-hover:0 0 0 .5px rgba(255,255,255,.08),0 8px 24px rgba(0,0,0,.4);--card-grad:linear-gradient(180deg,rgba(58,58,60,.7),rgba(44,44,46,.8))}
-html,body{height:100%;overflow:hidden}body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none}
+input,textarea{user-select:text;-webkit-user-select:text}
+.md-preview{user-select:text;-webkit-user-select:text}
 button{cursor:pointer;border:none;background:none;font:inherit;color:inherit}
 input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:12px 14px;outline:none;width:100%;transition:border .2s}input:focus,textarea:focus{border-color:var(--primary)}textarea{resize:vertical;min-height:80px}
 .bg-grad{position:fixed;inset:0;z-index:-1;background:linear-gradient(160deg,#667eea08,#764ba206,#007AFF04);pointer-events:none}
@@ -28,6 +30,15 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
 .search-w{flex:1;position:relative;display:flex;align-items:center}.search-w input{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border:none;border-radius:var(--radius);padding:10px 36px 10px 36px;font-size:15px;color:var(--text);width:100%;outline:none;transition:box-shadow .2s}.search-w input:focus{box-shadow:0 0 0 2px var(--primary),var(--shadow-card)}.search-w input::placeholder{color:var(--text3)}
 .search-w::before{content:"\1F50D";position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;opacity:.5;pointer-events:none;z-index:1}
 .search-clr{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;background:var(--text3);color:var(--bg);font-size:11px;display:none;align-items:center;justify-content:center;cursor:pointer;opacity:.6}.search-clr.show{display:flex}
+.fp{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--radius-sm);cursor:pointer;transition:border .2s;user-select:none;-webkit-user-select:none}.fp:active{opacity:.7}.fp-val{flex:1;font-size:15px;color:var(--text)}.fp-arrow{font-size:18px;color:var(--text3);transform:rotate(90deg);font-weight:700;margin-left:8px}
+.fpl{position:fixed;inset:0;z-index:350;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);opacity:0;pointer-events:none;transition:opacity .25s}.fpl.open{opacity:1;pointer-events:auto}
+.fpl-c{background:var(--bg2);backdrop-filter:blur(var(--blur)) saturate(180%);-webkit-backdrop-filter:blur(var(--blur)) saturate(180%);max-width:520px;width:100%;border-radius:16px 16px 0 0;max-height:60vh;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,.72,0,1)}.fpl.open .fpl-c{transform:translateY(0)}
+.fpl-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 8px}.fpl-hd h3{font-size:17px;font-weight:700}.fpl-hd button{font-size:22px;color:var(--text3)}
+.fpl-bd{flex:1;overflow-y:auto;padding:4px 12px 20px}
+.fpl-item{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:background .15s}.fpl-item:active{background:var(--bg3)}.fpl-item.sel{background:var(--primary-soft)}
+.fpl-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.fpl-name{flex:1;font-size:15px}.fpl-cnt{font-size:13px;color:var(--text3)}
+.fpl-none{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:var(--radius-sm);cursor:pointer;transition:background .15s}.fpl-none:active{background:var(--bg3)}.fpl-none.sel{background:var(--primary-soft)}
 .search-act{display:flex;gap:5px}.pill{background:var(--card-grad);backdrop-filter:blur(var(--blur-sm));-webkit-backdrop-filter:blur(var(--blur-sm));box-shadow:var(--shadow-card);border:none;border-radius:var(--radius-xs);padding:8px 10px;font-size:14px;color:var(--text2);transition:all .15s;min-width:38px;text-align:center}.pill:active{transform:scale(.88)}.search-scope{position:absolute;right:32px;top:50%;transform:translateY(-50%);z-index:1;padding:4px 6px;min-width:auto;background:transparent;font-size:13px}
 .tag-filter-bar{padding:4px 12px;display:flex;gap:6px;flex-wrap:wrap;overflow:hidden;transition:max-height .3s;max-height:0}.tag-filter-bar.show{max-height:60px;padding:6px 12px}
 .tf-chip{display:inline-flex;align-items:center;gap:3px;padding:4px 10px;border-radius:var(--radius-tag);font-size:12px;font-weight:600;background:var(--primary);color:#fff;animation:ci .2s}.tf-chip button{font-size:10px;opacity:.7;margin-left:2px}
@@ -196,13 +207,14 @@ input,textarea,select{font:inherit;color:var(--text);background:var(--bg3);borde
     <div><label>提示词内容</label><div class="md-toggle" id="mdToggle"><button class="on" id="mdEditBtn" onclick="setMdMode('edit')">编辑</button><button id="mdPrevBtn" onclick="setMdMode('preview')">预览</button></div><textarea id="pC" rows="5" placeholder="输入提示词\u2026\n\n支持 {{变量名}} 占位符\n支持 Markdown 格式"></textarea><div class="md-preview" id="mdPreview" style="display:none"></div></div>
     <div><label>示例</label><textarea id="pE" rows="2" placeholder="可选"></textarea></div>
     <div><label>标签</label><div class="tw" id="tagW" onclick="this.querySelector('input').focus()"><input type="text" id="tagIn" placeholder="输入标签回车添加" onkeydown="tagKey(event)"></div></div>
-    <div><label>文件夹</label><select id="pF"><option value="">无</option></select></div>
+    <div><label>文件夹</label><div class="fp" id="pF" onclick="toggleFolderPicker()"><span class="fp-val" id="pFVal">无</span><span class="fp-arrow">›</span></div><input type="hidden" id="pFId"></div>
     <div><label>卡片颜色</label><div class="cp-inline" id="colorPick"></div></div>
     <div><label>附件</label><input type="file" id="pFile" accept="image/*,audio/*,video/*,.txt,.md,.json" multiple onchange="preFiles()" style="position:absolute;opacity:0;width:0;height:0;pointer-events:none"><label for="pFile" class="file-btn">＋ 添加附件</label><div class="pa" id="prevArea"></div></div>
     <div id="verArea" style="display:none"><label>版本历史</label><div id="verList"></div></div>
   </div>
   <div class="m-ft"><button class="bs" onclick="closeM()">取消</button><button class="bs" id="mCopyCount" onclick="copyCountP(editId)" style="display:none">⎘ 复制副本</button><button class="bd" id="mDel" onclick="delP()" style="display:none">删除</button><button class="bp" onclick="saveP()" id="saveBtn">保存</button></div>
 </div>
+<div class="fpl" id="fpl" onclick="closeFolderPicker(event)"><div class="fpl-c"><div class="fpl-hd"><h3>选择文件夹</h3><button onclick="closeFolderPicker()">✕</button></div><div class="fpl-bd" id="fplBd"></div></div></div>
 <div class="mbg" id="statsBbg" onclick="closePanel('statsBbg','statsPanel')"></div>
 <div class="stats" id="statsPanel">
   <div class="stats-hd"><h3 id="panelTitle">&#128202; 统计面板</h3><button onclick="closePanel('statsBbg','statsPanel')">&#10005;</button></div>
@@ -707,7 +719,7 @@ function openM(fromTpl,showTpl){
   console.log('openM called',fromTpl,showTpl);
   editId=null;editTags=[];pendingFiles=[];pendingKeep=[];mdMode='edit';
   document.getElementById('pT').value='';document.getElementById('pC').value='';document.getElementById('pE').value='';
-  renderEditTags();document.getElementById('pF').innerHTML='<option value="">无</option>'+D.folders.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
+  renderEditTags();document.getElementById('pFId').value='';document.getElementById('pFVal').textContent='无';
   document.getElementById('prevArea').innerHTML='';document.getElementById('mDel').style.display='none';document.getElementById('mCopyCount').style.display='none';
   document.getElementById('mT').textContent='新建提示词';document.getElementById('saveBtn').textContent='保存';
   document.getElementById('verArea').style.display='none';
@@ -724,6 +736,19 @@ function openM(fromTpl,showTpl){
   }catch(e){console.error('openM error:',e.message,e.stack);toast('打开失败: '+e.message)}
 }
 function closeM(){document.getElementById('mbg').classList.remove('open');document.getElementById('modal').classList.remove('open')}
+// Folder picker
+function toggleFolderPicker(){
+  var cur=document.getElementById('pFId').value;
+  var html='<div class="fpl-none'+(cur===''?' sel':'')+'" onclick="selectFolder(\'\',\'无\')">无文件夹</div>';
+  D.folders.forEach(function(f){
+    var cnt=D.prompts.filter(function(p){return p.folder===f.id&&!p.deleted}).length;
+    html+='<div class="fpl-item'+(cur===f.id?' sel':'')+'" onclick="selectFolder(\''+f.id+'\',\''+esc(f.name)+'\')"><span class="fpl-dot" style="background:'+f.color+'"></span><span class="fpl-name">'+esc(f.name)+'</span><span class="fpl-cnt">'+cnt+'</span></div>';
+  });
+  document.getElementById('fplBd').innerHTML=html;
+  document.getElementById('fpl').classList.add('open');
+}
+function selectFolder(id,name){document.getElementById('pFId').value=id;document.getElementById('pFVal').textContent=name;closeFolderPicker()}
+function closeFolderPicker(ev){if(!ev||ev.target===document.getElementById('fpl'))document.getElementById('fpl').classList.remove('open')}
 function useTemplate(id){
   const allTpls=[...TPLS,...D.templates];
   const t=allTpls.find(x=>x.id===id);if(!t)return;
@@ -735,8 +760,10 @@ function editP(id){
   const p=D.prompts.find(x=>x.id===id);if(!p)return;
   editId=id;editTags=[...(p.tags||[])];pendingKeep=[...(p.attachments||[])];
   document.getElementById('pT').value=p.title;document.getElementById('pC').value=p.content;document.getElementById('pE').value=p.example||'';
-  renderEditTags();document.getElementById('pF').innerHTML='<option value="">无</option>'+D.folders.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('');
-  document.getElementById('pF').value=p.folder||'';document.getElementById('mDel').style.display='';document.getElementById('mCopyCount').style.display='';
+  renderEditTags();
+  var fname=p.folder?((D.folders.find(function(f){return f.id===p.folder})||{}).name||'无'):'无';
+  document.getElementById('pFId').value=p.folder||'';document.getElementById('pFVal').textContent=fname;
+  document.getElementById('mDel').style.display='';document.getElementById('mCopyCount').style.display='';
   document.getElementById('mT').textContent='编辑提示词';document.getElementById('saveBtn').textContent='保存';
   document.getElementById('tplArea').style.display='none';setMdMode('edit');
   // Color pick
@@ -760,7 +787,7 @@ function restoreVersion(pid,idx){
 function saveP(){
   try{
   const title=document.getElementById('pT').value.trim();const content=document.getElementById('pC').value.trim();
-  const example=document.getElementById('pE').value.trim();const folder=document.getElementById('pF').value;
+  const example=document.getElementById('pE').value.trim();const folder=document.getElementById('pFId').value;
   if(!title){toast('请输入标题');return}
   let p;
   if(editId){
