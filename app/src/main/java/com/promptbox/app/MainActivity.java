@@ -63,6 +63,7 @@ public class MainActivity extends Activity {
                     "var s=document.createElement('style');" +
                     "s.textContent='" +
                     ".sb-hd{padding-top:max(50px," + sb + "px) !important}" +
+                    ".hdr{padding-top:max(20px,calc(" + sb + "px + 4px)) !important}" +
                     ".batch-bar{bottom:max(20px," + nb + "px) !important}" +
                     ".m-ft{padding-bottom:max(12px," + nb + "px) !important}" +
                     ".fab{bottom:calc(max(20px," + nb + "px) + 8px) !important}" +
