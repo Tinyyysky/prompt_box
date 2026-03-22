@@ -372,7 +372,7 @@ function render(){
     if(hasImg){
       const items=imgs.map((a,idx)=>`<div class="stack-item"><img src="${a.thumb||a.url||''}" alt=""></div>`).join('');
       const cnt=imgs.length>1?`<div class="stack-count">${imgs.length} 张</div>`:'';
-      atG=`<div class="card-gal"><div class="stack-wrap">${items}${cnt}</div></div>`;
+      atG=`<div class="card-gal" data-prompt-id="${p.id}"><div class="stack-wrap">${items}${cnt}</div></div>`;
       // Lazy load images without url from IDB
       setTimeout(()=>{
         const gal=document.querySelector(`.card-gal[data-prompt-id="${p.id}"]`);
@@ -801,8 +801,8 @@ async function shareP(id){
     }
 
     // Calculate total height
-    let totalH=180; // header
-    totalH+=fsTitle+20; // title
+    let totalH=180;
+    totalH+=fsTitle+20;
     const contentLines=measureText(p.content||'',W-PAD*2);
     totalH+=contentLines.length*(fs*1.6)+30;
     if(p.example){
@@ -811,10 +811,9 @@ async function shareP(id){
       totalH+=exLines.length*(fsSmall*1.5)+20;
     }
     if(p.tags&&p.tags.length)totalH+=50;
-    // Images
     const imgH=imgs.length?imgs.length*300+40:0;
     totalH+=imgH;
-    totalH+=60; // footer
+    totalH+=60;
 
     canvas.width=W*2;canvas.height=totalH*2;
     ctx.scale(2,2);
@@ -828,11 +827,10 @@ async function shareP(id){
     const grad=ctx.createLinearGradient(0,0,W,160);
     grad.addColorStop(0,'#667eea');grad.addColorStop(1,'#764ba2');
     ctx.fillStyle=grad;
-    roundRect(ctx,0,0,W,160,0);
-    ctx.fill();
+    roundRect(ctx,0,0,W,160,0);ctx.fill();
     ctx.fillStyle='#fff';
     ctx.font='bold 24px -apple-system,sans-serif';
-    ctx.fillText('🦞 提示词盒子',PAD,50);
+    ctx.fillText('提示词盒子',PAD,50);
     ctx.font='18px -apple-system,sans-serif';
     ctx.globalAlpha=0.8;
     ctx.fillText(new Date().toLocaleDateString('zh-CN'),PAD,80);
@@ -848,36 +846,26 @@ async function shareP(id){
     // Content
     ctx.font=fs+'px -apple-system,sans-serif';
     ctx.fillStyle='#333';
-    for(const line of contentLines){
-      ctx.fillText(line,PAD,y);
-      y+=fs*1.6;
-    }
+    for(const line of contentLines){ctx.fillText(line,PAD,y);y+=fs*1.6}
     y+=20;
 
     // Example
     if(p.example){
-      ctx.fillStyle='#888';
-      ctx.font='bold '+fsSmall+'px -apple-system,sans-serif';
+      ctx.fillStyle='#888';ctx.font='bold '+fsSmall+'px -apple-system,sans-serif';
       ctx.fillText('示例',PAD,y);y+=30;
       ctx.font=fsSmall+'px -apple-system,sans-serif';
       const exLines2=measureText(p.example,W-PAD*2,fsSmall+'px -apple-system,sans-serif');
-      for(const line of exLines2){
-        ctx.fillText(line,PAD,y);y+=fsSmall*1.5;
-      }
+      for(const line of exLines2){ctx.fillText(line,PAD,y);y+=fsSmall*1.5}
       y+=10;
     }
 
     // Tags
     if(p.tags&&p.tags.length){
-      ctx.font='20px -apple-system,sans-serif';
-      let tx=PAD;
+      ctx.font='20px -apple-system,sans-serif';let tx=PAD;
       for(const tag of p.tags){
         const tw=ctx.measureText(tag).width+24;
-        ctx.fillStyle='#e8e8ed';
-        roundRect(ctx,tx,y-18,tw,28,14);ctx.fill();
-        ctx.fillStyle='#555';
-        ctx.fillText(tag,tx+12,y);
-        tx+=tw+8;
+        ctx.fillStyle='#e8e8ed';roundRect(ctx,tx,y-18,tw,28,14);ctx.fill();
+        ctx.fillStyle='#555';ctx.fillText(tag,tx+12,y);tx+=tw+8;
       }
       y+=50;
     }
@@ -886,43 +874,63 @@ async function shareP(id){
     for(const src of imgs){
       try{
         const img=await loadImage(src);
-        const ratio=img.width/(W-PAD*2);
-        const ih=img.height/ratio;
-        ctx.save();
-        roundRect(ctx,PAD,y,W-PAD*2,Math.min(ih,280),12);ctx.clip();
-        ctx.drawImage(img,PAD,y,W-PAD*2,Math.min(ih,280));
-        ctx.restore();
+        const ratio=img.width/(W-PAD*2);const ih=img.height/ratio;
+        ctx.save();roundRect(ctx,PAD,y,W-PAD*2,Math.min(ih,280),12);ctx.clip();
+        ctx.drawImage(img,PAD,y,W-PAD*2,Math.min(ih,280));ctx.restore();
         y+=Math.min(ih,280)+16;
       }catch(e){}
     }
 
     // Footer
-    y+=20;
-    ctx.fillStyle='#aaa';
-    ctx.font='16px -apple-system,sans-serif';
+    y+=20;ctx.fillStyle='#aaa';ctx.font='16px -apple-system,sans-serif';
     ctx.fillText('由 提示词盒子 生成',PAD,y);
 
-    // Export as blob
-    const blob=await new Promise(r=>canvas.toBlob(r,'image/png'));
-    const file=new File([blob],`prompt-${Date.now()}.png`,{type:'image/png'});
+    // Export as data URL for preview
+    const dataUrl=canvas.toDataURL('image/png');
+    window._shareBlob=await new Promise(r=>canvas.toBlob(r,'image/png'));
+    window._shareTitle=p.title;
 
-    // Try Web Share API (Android/iOS)
-    if(navigator.canShare&&navigator.canShare({files:[file]})){
-      await navigator.share({files:[file],title:p.title});
-      toast('已分享');
-    }else{
-      // Fallback: download
-      const url=URL.createObjectURL(blob);
-      const a=document.createElement('a');a.href=url;a.download=file.name;
-      document.body.appendChild(a);a.click();document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      toast('已保存长图');
-    }
+    // Show preview modal
+    const vm=document.getElementById('vm');
+    const vmB=document.getElementById('vmB');
+    vmB.innerHTML=`<div style="max-width:90vw;max-height:80vh;overflow:auto;border-radius:12px;background:var(--bg2)">
+      <img src="${dataUrl}" style="width:100%;display:block;border-radius:12px 12px 0 0">
+      <div style="display:flex;gap:8px;padding:12px 16px;border-top:.5px solid var(--border)">
+        <button onclick="shareDL()" style="flex:1;padding:12px;border-radius:10px;font-size:15px;font-weight:600;background:var(--primary);color:#fff;border:none;cursor:pointer">保存图片</button>
+        <button onclick="shareToApp()" style="flex:1;padding:12px;border-radius:10px;font-size:15px;font-weight:600;background:var(--bg3);color:var(--text);border:none;cursor:pointer">分享到...</button>
+        <button onclick="closeVM()" style="padding:12px 16px;border-radius:10px;font-size:15px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">取消</button>
+      </div>
+    </div>`;
+    vm.classList.add('open');
+    toast('');
   }catch(e){
     console.error('shareP error:',e);
-    // Fallback to JSON copy
-    const data={title:p.title,content:p.content,example:p.example,tags:p.tags};
-    clipCopy(JSON.stringify(data,null,2)).then(()=>toast('已复制分享JSON')).catch(()=>toast('分享失败'));
+    toast('生成失败: '+e.message);
+  }
+}
+function closeVM(){document.getElementById('vm').classList.remove('open')}
+function shareDL(){
+  const blob=window._shareBlob;if(!blob)return;
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`prompt-${Date.now()}.png`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  closeVM();toast('已保存');
+}
+async function shareToApp(){
+  const blob=window._shareBlob;const title=window._shareTitle||'提示词';
+  if(!blob)return closeVM();
+  const file=new File([blob],`prompt-${Date.now()}.png`,{type:'image/png'});
+  try{
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      await navigator.share({files:[file],title:title});
+      closeVM();toast('已分享');
+    }else{
+      // No Web Share API, fallback to download
+      shareDL();toast('已保存到相册，请手动分享到其他应用');
+    }
+  }catch(e){
+    if(e.name!=='AbortError'){shareDL();toast('已保存到相册')}
   }
 }
 
